@@ -43,15 +43,19 @@ export default function Admin({ onBack }) {
 
   async function uploadArticleImage(file) {
     const ext = file.name.split(".").pop().toLowerCase();
-    const path = `article_${Date.now()}.${ext}`;
-    const key = SERVICE();
-    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/banners/${path}`, {
-      method:"POST", headers:{apikey:key,Authorization:`Bearer ${key}`,"Content-Type":file.type,"x-upsert":"true"}, body:file
+    const filename = `article_${Date.now()}.${ext}`;
+    const key = (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_SERVICE_KEY) || SERVICE();
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/banners/${filename}`, {
+      method:"POST",
+      headers:{ "apikey":key, "Authorization":`Bearer ${key}`, "Content-Type":file.type, "x-upsert":"true", "Cache-Control":"3600" },
+      body:file
     });
-    const res = await r.json();
-    if (r.ok||res.Key||res.path) {
-      setAForm(f=>({...f,image_url:`${SUPABASE_URL}/storage/v1/object/public/banners/${path}`}));
-    } else { alert("Erro ao fazer upload: " + (res.message||JSON.stringify(res))); }
+    if (r.ok) {
+      setAForm(f=>({...f, image_url:`${SUPABASE_URL}/storage/v1/object/public/banners/${filename}`}));
+    } else {
+      const res = await r.json().catch(()=>({}));
+      alert("Erro ao fazer upload: " + (res.message||r.status));
+    }
   }
 
   async function saveArticle() {

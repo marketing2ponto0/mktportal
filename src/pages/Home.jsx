@@ -3,6 +3,8 @@ import Header from "../components/Header.jsx";
 import Banner from "../components/Banner.jsx";
 import { SUPABASE_URL, SUPABASE_ANON } from "../App.jsx";
 
+const SCV_CATS = ["Eventos","Shows","Gastronomia","Cinema","Teatro","Festivais","Lazer"];
+
 const CITIES = ["Todas","Franco da Rocha","Caieiras","Francisco Morato","Mairiporã","Cajamar","Jundiaí","São Paulo"];
 const CATS = ["Todas","Política","Segurança","Saúde","Obras","Entretenimento","Eventos","Legislação"];
 
@@ -12,8 +14,19 @@ export default function Home({ go }) {
   const [city, setCity] = useState("Todas");
   const [cat, setCat] = useState("Todas");
   const [search, setSearch] = useState("");
+  const [scvArticles, setScvArticles] = useState([]);
 
-  useEffect(() => { loadArticles(); }, []);
+  useEffect(() => { loadArticles(); loadSCV(); }, []);
+
+  async function loadSCV() {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/articles?section=eq.scv&order=published_at.desc&limit=6`, {
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` }
+      });
+      const d = await r.json();
+      setScvArticles(Array.isArray(d) ? d : []);
+    } catch {}
+  }
 
   async function loadArticles() {
     setLoading(true);
@@ -123,6 +136,35 @@ export default function Home({ go }) {
         <div style={{ background: "#e8e8e8", borderRadius: 8, minHeight: 90, display: "flex", alignItems: "center", justifyContent: "center", margin: "12px 0" }}>
           <p style={{ color: "#aaa", fontSize: 11 }}>Espaço publicitário — Google AdSense</p>
         </div>
+
+        {/* Só Curtindo a Vida Section */}
+        {scvArticles.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ background: "linear-gradient(135deg,#7c3aed,#db2777)", borderRadius: 10, padding: "12px 14px", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }} onClick={() => go("#/so-curtindo")}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 900, color: "#fff", margin: "0 0 2px", fontFamily: "system-ui" }}>🎭 Só Curtindo a Vida</h3>
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", margin: 0, fontFamily: "system-ui" }}>Eventos, shows e lazer em SP</p>
+              </div>
+              <span style={{ color: "#fff", fontSize: 18 }}>→</span>
+            </div>
+            <div>
+              {scvArticles.slice(0,4).map(a => (
+                <div key={a.id} onClick={() => go(`#/artigo/${encodeURIComponent(a.slug||a.id)}`)}
+                  style={{ background: "#fff", borderRadius: 8, marginBottom: 8, overflow: "hidden", cursor: "pointer", display: "flex", gap: 10, padding: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", alignItems: "flex-start" }}>
+                  {a.image_url && <img src={a.image_url} alt="" style={{ width: 80, height: 58, objectFit: "cover", borderRadius: 6, flexShrink: 0 }} onError={e=>e.target.style.display="none"} />}
+                  <div style={{ flex: 1 }}>
+                    <span style={{ background: "#7c3aed", color: "#fff", fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "1px 6px", textTransform: "uppercase", fontFamily: "system-ui" }}>{a.category}</span>
+                    <h3 style={{ fontSize: 13, fontWeight: 700, color: "#111", margin: "4px 0 4px", lineHeight: 1.35, fontFamily: "system-ui" }}>{a.title}</h3>
+                    {a.city && <p style={{ fontSize: 10, color: "#aaa", margin: 0, fontFamily: "system-ui" }}>📍 {a.city}</p>}
+                  </div>
+                </div>
+              ))}
+              <button onClick={() => go("#/so-curtindo")} style={{ width: "100%", background: "none", border: "1px solid #7c3aed", borderRadius: 8, padding: "8px 0", color: "#7c3aed", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "system-ui" }}>
+                Ver tudo em Só Curtindo →
+              </button>
+            </div>
+          </div>
+        )}
 
         <footer style={{ textAlign: "center", padding: "16px 0", borderTop: "1px solid #e0e0e0", marginTop: 8 }}>
           <p style={{ fontSize: 11, color: "#aaa", fontFamily: "system-ui" }}>© Portal 2.0 — Marketing 2.0 Agency</p>

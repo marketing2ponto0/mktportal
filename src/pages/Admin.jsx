@@ -18,6 +18,9 @@ export default function Admin({ onBack }) {
   const [bForm, setBForm] = useState({ name:"", image_url:"", whatsapp_number:"", whatsapp_text:"Olá, vim do Portal 2.0", position:"top", active:true, order_num:0 });
   const [bEditing, setBEditing] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [aForm, setAForm] = useState({ title:"", summary:"", content:"", image_url:"", category:"Notícia", city:"Franco da Rocha", section:"news" });
+  const [aSaving, setASaving] = useState(false);
+  const imgRef = useRef();
   const [uploadErr, setUploadErr] = useState("");
   const fileRef = useRef();
 
@@ -36,6 +39,36 @@ export default function Admin({ onBack }) {
   async function loadArticles() {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/articles?order=published_at.desc&limit=30`, { headers: headers() });
     const d = await r.json(); setArticles(Array.isArray(d)?d:[]);
+  }
+
+  async function uploadArticleImage(file) {
+    const ext = file.name.split(".").pop().toLowerCase();
+    const path = `article_${Date.now()}.${ext}`;
+    const key = SERVICE();
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/banners/${path}`, {
+      method:"POST", headers:{apikey:key,Authorization:`Bearer ${key}`,"Content-Type":file.type,"x-upsert":"true"}, body:file
+    });
+    const res = await r.json();
+    if (r.ok||res.Key||res.path) {
+      setAForm(f=>({...f,image_url:`${SUPABASE_URL}/storage/v1/object/public/banners/${path}`}));
+    } else { alert("Erro ao fazer upload: " + (res.message||JSON.stringify(res))); }
+  }
+
+  async function saveArticle() {
+    if (!aForm.title||!aForm.content) { alert("Preencha título e conteúdo!"); return; }
+    setASaving(true);
+    try {
+      const slug = aForm.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") + "-" + Date.now();
+      await fetch(`${SUPABASE_URL}/rest/v1/articles`, {
+        method:"POST", headers:headers(true),
+        body:JSON.stringify({...aForm, slug, published_at: new Date().toISOString()})
+      });
+      setAForm({title:"",summary:"",content:"",image_url:"",category:"Notícia",city:"Franco da Rocha",section:"news"});
+      alert("✅ Artigo publicado no portal!");
+      setTab("articles");
+      loadArticles();
+    } catch(e) { alert("Erro: "+e.message); }
+    setASaving(false);
   }
 
   async function uploadImage(file) {
@@ -96,10 +129,10 @@ export default function Admin({ onBack }) {
       <div style={{maxWidth:700,margin:"0 auto",padding:16}}>
         {/* Tabs */}
         <div style={{display:"flex",gap:4,marginBottom:16}}>
-          {["banners","articles"].map(t=>(
+          {[["banners","📣 Banners"],["articles","📰 Artigos"],["novo","✍️ Nova Notícia"]].map(([t,l])=>(
             <button key={t} onClick={()=>setTab(t)}
-              style={{flex:1,background:tab===t?"#A01313":"#fff",color:tab===t?"#fff":"#333",border:`1px solid ${tab===t?"#A01313":"#ddd"}`,borderRadius:8,padding:"8px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-              {t==="banners"?"📣 Banners":"📰 Artigos"}
+              style={{flex:1,background:tab===t?"#A01313":"#fff",color:tab===t?"#fff":"#333",border:`1px solid ${tab===t?"#A01313":"#ddd"}`,borderRadius:8,padding:"8px 0",fontSize:11,fontWeight:700,cursor:"pointer"}}>
+              {l}
             </button>
           ))}
         </div>
@@ -157,6 +190,48 @@ export default function Admin({ onBack }) {
               </div>
             ))}
           </>
+        )}
+
+        {/* NOVO ARTIGO TAB */}
+        {tab==="novo" && (
+          <div style={{background:"#fff",borderRadius:12,padding:16,boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
+            <h3 style={{fontSize:14,fontWeight:700,marginBottom:14}}>✍️ Nova Notícia Manual</h3>
+            <label style={S.label}>Título *</label>
+            <input style={S.input} placeholder="Título da notícia" value={aForm.title} onChange={e=>setAForm(f=>({...f,title:e.target.value}))}/>
+            <label style={S.label}>Resumo (aparece em destaque)</label>
+            <textarea style={{...S.input,height:70,resize:"none"}} placeholder="Resumo da notícia..." value={aForm.summary} onChange={e=>setAForm(f=>({...f,summary:e.target.value}))}/>
+            <label style={S.label}>Conteúdo completo *</label>
+            <textarea style={{...S.input,height:160,resize:"vertical"}} placeholder="Texto completo da notícia..." value={aForm.content} onChange={e=>setAForm(f=>({...f,content:e.target.value}))}/>
+            <label style={S.label}>Imagem</label>
+            <div style={{display:"flex",gap:8,marginBottom:8}}>
+              <input style={{...S.input,margin:0,flex:1}} placeholder="URL da imagem" value={aForm.image_url} onChange={e=>setAForm(f=>({...f,image_url:e.target.value}))}/>
+              <button onClick={()=>imgRef.current.click()} style={{background:"#f0f0f0",border:"1px solid #ddd",borderRadius:8,padding:"0 12px",cursor:"pointer",fontSize:12}}>📁</button>
+            </div>
+            <input ref={imgRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>e.target.files[0]&&uploadArticleImage(e.target.files[0])}/>
+            {aForm.image_url&&<img src={aForm.image_url} alt="" style={{width:"100%",height:80,objectFit:"cover",borderRadius:6,marginBottom:8}} onError={e=>e.target.style.display="none"}/>}
+            <div style={{display:"flex",gap:8,marginBottom:12}}>
+              <div style={{flex:1}}>
+                <label style={S.label}>Categoria</label>
+                <select style={{...S.input,margin:0}} value={aForm.category} onChange={e=>setAForm(f=>({...f,category:e.target.value}))}>
+                  {["Notícia","Política","Segurança","Saúde","Obras","Entretenimento","Eventos","Legislação"].map(c=><option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div style={{flex:1}}>
+                <label style={S.label}>Seção</label>
+                <select style={{...S.input,margin:0}} value={aForm.section} onChange={e=>setAForm(f=>({...f,section:e.target.value}))}>
+                  <option value="news">📰 Notícias</option>
+                  <option value="scv">🎭 Só Curtindo</option>
+                </select>
+              </div>
+            </div>
+            <label style={S.label}>Cidade</label>
+            <select style={{...S.input}} value={aForm.city} onChange={e=>setAForm(f=>({...f,city:e.target.value}))}>
+              {["Franco da Rocha","Caieiras","Francisco Morato","Mairiporã","Cajamar","Jundiaí","São Paulo"].map(c=><option key={c}>{c}</option>)}
+            </select>
+            <button onClick={saveArticle} disabled={aSaving} style={{...S.btn(),opacity:aSaving?0.7:1}}>
+              {aSaving?"Publicando...":"🚀 Publicar no Portal"}
+            </button>
+          </div>
         )}
 
         {/* ARTICLES TAB */}

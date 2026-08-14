@@ -3,7 +3,25 @@ import Header from "../components/Header.jsx";
 import Banner from "../components/Banner.jsx";
 import { SUPABASE_URL, SUPABASE_ANON } from "../App.jsx";
 
-export default function Article({ slug, onBack, go }) {
+// Remove tags HTML, decodifica entidades e tira URLs cruas do texto
+function clean(html) {
+  if (!html) return "";
+  return String(html)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export default function Article({ slug, from = "home", onBack, go }) {
+  const headerActive = from === "scv" ? "scv" : "home";
+  const artigoLink = (a) => `#/artigo/${encodeURIComponent(a.slug||a.id)}${from === "scv" ? "?scv" : ""}`;
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [related, setRelated] = useState([]);
@@ -53,7 +71,7 @@ export default function Article({ slug, onBack, go }) {
 
   if (loading) return (
     <div style={{ minHeight:"100vh", background:"#f4f4f4", fontFamily:"system-ui,sans-serif" }}>
-      <Header go={go} />
+      <Header go={go} active={headerActive} />
       <div style={{ textAlign:"center", padding:60 }}>
         <div style={{ width:32, height:32, border:"3px solid #eee", borderTop:"3px solid #A01313", borderRadius:"50%", animation:"spin 0.8s linear infinite", margin:"0 auto" }} />
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -63,7 +81,7 @@ export default function Article({ slug, onBack, go }) {
 
   if (!article) return (
     <div style={{ minHeight:"100vh", background:"#f4f4f4" }}>
-      <Header go={go} />
+      <Header go={go} active={headerActive} />
       <div style={{ textAlign:"center", padding:60 }}>
         <p style={{ fontSize:40 }}>📭</p>
         <p style={{ color:"#999" }}>Artigo não encontrado</p>
@@ -72,11 +90,14 @@ export default function Article({ slug, onBack, go }) {
     </div>
   );
 
-  const paragraphs = (article.content || article.summary || "").split("\n").filter(p => p.trim());
+  const cleanSummary = clean(article.summary || "");
+  const cleanContent = clean(article.content || "");
+  const showBody = cleanContent && cleanContent !== cleanSummary && cleanContent.length >= 40;
+  const paragraphs = showBody ? [cleanContent] : [];
 
   return (
     <div style={{ minHeight:"100vh", background:"#f4f4f4", fontFamily:"'Georgia',serif" }}>
-      <Header go={go} />
+      <Header go={go} active={headerActive} />
       <div style={{ maxWidth:900, margin:"0 auto", padding:"0 12px" }}>
         <Banner position="top" />
 
@@ -94,9 +115,9 @@ export default function Article({ slug, onBack, go }) {
               {new Date(article.published_at).toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"})}
             </p>
 
-            {article.summary && (
+            {cleanSummary && (
               <p style={{ fontSize:15, color:"#444", fontWeight:400, lineHeight:1.7, marginBottom:16, borderLeft:"3px solid #A01313", paddingLeft:12, fontStyle:"italic" }}>
-                {article.summary}
+                {cleanSummary}
               </p>
             )}
 
@@ -107,6 +128,13 @@ export default function Article({ slug, onBack, go }) {
                 <p key={i} style={{ marginBottom:14 }}>{p}</p>
               ))}
             </div>
+
+            {article.source_url && (
+              <a href={article.source_url} target="_blank" rel="noopener noreferrer"
+                style={{ display:"inline-block", background:"#A01313", color:"#fff", textDecoration:"none", borderRadius:8, padding:"10px 16px", fontSize:13, fontWeight:700, fontFamily:"system-ui", marginTop:8 }}>
+                Ler matéria completa na fonte →
+              </a>
+            )}
 
             <div style={{ borderTop:"1px solid #f0f0f0", paddingTop:12, marginTop:16, fontFamily:"system-ui" }}>
               <p style={{ fontSize:11, color:"#aaa", textAlign:"center" }}>portal2ponto0.com.br</p>
@@ -127,7 +155,7 @@ export default function Article({ slug, onBack, go }) {
               <h3 style={{ fontSize:12, fontWeight:700, color:"#333", margin:0, textTransform:"uppercase", letterSpacing:1, fontFamily:"system-ui" }}>Veja também</h3>
             </div>
             {related.map(a => (
-              <div key={a.id} onClick={() => go(`#/artigo/${encodeURIComponent(a.slug||a.id)}`)}
+              <div key={a.id} onClick={() => go(artigoLink(a))}
                 style={{ background:"#fff", borderRadius:8, marginBottom:8, padding:10, cursor:"pointer", display:"flex", gap:10, boxShadow:"0 1px 3px rgba(0,0,0,0.06)" }}>
                 {a.image_url && <img src={a.image_url} alt="" style={{ width:70, height:50, objectFit:"cover", borderRadius:6, flexShrink:0 }} onError={e=>e.target.style.display="none"} />}
                 <h4 style={{ fontSize:12, fontWeight:600, color:"#111", margin:0, lineHeight:1.35 }}>{a.title}</h4>
@@ -137,7 +165,7 @@ export default function Article({ slug, onBack, go }) {
         )}
 
         <button onClick={onBack} style={{ width:"100%", background:"#fff", border:"1px solid #ddd", borderRadius:8, padding:12, color:"#333", fontWeight:600, fontSize:13, cursor:"pointer", marginBottom:16, fontFamily:"system-ui" }}>
-          ← Voltar às notícias
+          {from === "scv" ? "← Voltar para Só Curtindo" : "← Voltar às notícias"}
         </button>
       </div>
     </div>

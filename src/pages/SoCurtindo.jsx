@@ -78,7 +78,7 @@ export default function SoCurtindo({ go }) {
 
         {/* Destaque SCV */}
         {featured && (
-          <div onClick={()=>go(`#/artigo/${encodeURIComponent(featured.slug||featured.id)}`)}
+          <div onClick={()=>go(`#/artigo/${encodeURIComponent(featured.slug||featured.id)}?scv`)}
             style={{ cursor:"pointer", marginBottom:12, borderRadius:10, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.1)", position:"relative" }}>
             {featured.image_url
               ? <img src={featured.image_url} alt="" style={{ width:"100%", height:220, objectFit:"cover", display:"block" }} onError={e=>e.target.style.display="none"} />
@@ -111,7 +111,7 @@ export default function SoCurtindo({ go }) {
 
 function SCVCard({ a, go }) {
   return (
-    <div onClick={()=>go(`#/artigo/${encodeURIComponent(a.slug||a.id)}`)}
+    <div onClick={()=>go(`#/artigo/${encodeURIComponent(a.slug||a.id)}?scv`)}
       style={{ background:"#fff", borderRadius:8, marginBottom:8, overflow:"hidden", cursor:"pointer", display:"flex", gap:10, padding:10, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", alignItems:"flex-start" }}>
       {a.image_url && <img src={a.image_url} alt="" style={{ width:90, height:65, objectFit:"cover", borderRadius:6, flexShrink:0 }} onError={e=>e.target.style.display="none"} />}
       <div style={{ flex:1, minWidth:0 }}>

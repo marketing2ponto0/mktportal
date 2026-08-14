@@ -1,41 +1,33 @@
 import { useState, useEffect } from "react";
 import Home from "./pages/Home.jsx";
 import Article from "./pages/Article.jsx";
+import SoCurtindo from "./pages/SoCurtindo.jsx";
 import Admin from "./pages/Admin.jsx";
 
-const SUPABASE_URL = "https://yuqidbvfilomxkwaaerl.supabase.co";
-const SUPABASE_ANON = "sb_publishable_t3Qiwi-26sBX-0mbtdjXCA__h26yp3p";
+export const SUPABASE_URL = "https://yuqidbvfilomxkwaaerl.supabase.co";
+export const SUPABASE_ANON = "sb_publishable_t3Qiwi-26sBX-0mbtdjXCA__h26yp3p";
 
-export { SUPABASE_URL, SUPABASE_ANON };
+function getPage() {
+  const h = window.location.hash;
+  if (h.startsWith("#/artigo/")) return { page: "article", slug: decodeURIComponent(h.replace("#/artigo/","")) };
+  if (h === "#/so-curtindo") return { page: "scv" };
+  if (h === "#/admin") return { page: "admin" };
+  return { page: "home" };
+}
 
 export default function App() {
-  const [page, setPage] = useState("home");
-  const [article, setArticle] = useState(null);
+  const [state, setState] = useState(getPage());
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash.startsWith("#/admin")) { setPage("admin"); return; }
-    if (hash.startsWith("#/article/")) {
-      const url = decodeURIComponent(hash.replace("#/article/", ""));
-      setArticle({ url });
-      setPage("article");
-    }
+    const handler = () => setState(getPage());
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
   }, []);
 
-  const navigate = (pg, data) => {
-    if (pg === "article") {
-      window.location.hash = `#/article/${encodeURIComponent(data.url)}`;
-      setArticle(data);
-    } else if (pg === "admin") {
-      window.location.hash = "#/admin";
-    } else {
-      window.location.hash = "";
-    }
-    setPage(pg);
-    window.scrollTo(0, 0);
-  };
+  const go = (hash) => { window.location.hash = hash; window.scrollTo(0,0); };
 
-  if (page === "admin") return <Admin onBack={() => navigate("home")} />;
-  if (page === "article" && article) return <Article article={article} onBack={() => navigate("home")} />;
-  return <Home onArticle={(a) => navigate("article", a)} />;
+  if (state.page === "admin") return <Admin onBack={() => go("")} />;
+  if (state.page === "article") return <Article slug={state.slug} onBack={() => go("")} go={go} />;
+  if (state.page === "scv") return <SoCurtindo go={go} />;
+  return <Home go={go} />;
 }

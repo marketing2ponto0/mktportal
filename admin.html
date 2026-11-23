@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MKT Portal · Painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#F4F2EE;--surface:#fff;--fg:#17161A;--muted:#6C6A63;--line:#E2DED6;--accent:#A01313;--ok:#0E7C66;--sans:"Inter",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.45}
+a{color:var(--accent)}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0}
+.brand{font-weight:800;font-size:19px}.brand .k{color:var(--accent)}
+.btn{font-family:inherit;font-weight:600;font-size:14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:9px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.danger{color:#b00;border-color:#f0c9c9}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:600;cursor:pointer;font-size:13.5px}
+.tab[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 12px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;font-family:inherit;font-size:14.5px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--fg)}
+textarea{min-height:140px;resize:vertical}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>div{flex:1;min-width:140px}
+.muted{color:var(--muted);font-size:13px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px;background:var(--surface)}
+.item img{width:84px;height:48px;object-fit:cover;border-radius:7px;background:#eee;flex:0 0 auto}
+.item .meta{min-width:0;flex:1}.item .meta b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#f0ecE4;color:var(--muted)}
+.pill.on{background:var(--ok);color:#fff}.pill.off{background:#ddd;color:#555}
+.actions{display:flex;gap:6px;flex:0 0 auto}
+.center{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login{width:100%;max-width:360px}
+.status{padding:10px 12px;border-radius:9px;font-size:13.5px;margin:10px 0;display:none}
+.status.show{display:block}
+.status.err{background:#fbe9e9;color:#9b1c1c}.status.ok{background:#e7f6f1;color:#0b6b57}
+.hide{display:none!important}
+.thumbprev{margin-top:8px;max-height:90px;border-radius:8px;border:1px solid var(--line)}
+.foot{color:var(--muted);font-size:12px;text-align:center;padding:24px 0}
+.ggrid{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.ggrid img{width:60px;height:60px;object-fit:cover;border-radius:7px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="center">
+  <div class="login">
+    <div class="brand" style="font-size:24px;margin-bottom:4px"><span class="k">MKT</span> Portal</div>
+    <div class="muted" style="margin-bottom:16px">Painel de administração</div>
+    <div class="card">
+      <div id="authTitle" style="font-weight:700;margin-bottom:8px">Entrar</div>
+      <label>E-mail</label><input id="email" type="email" autocomplete="username" placeholder="voce@email.com">
+      <label>Senha</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••">
+      <div id="authStatus" class="status"></div>
+      <button id="authBtn" class="btn pri" style="width:100%;margin-top:12px">Entrar</button>
+      <div class="muted" style="margin-top:12px;text-align:center">
+        <a href="#" id="toggleAuth">Primeiro acesso? Criar conta</a>
+      </div>
+    </div>
+    <div class="foot">Apenas o administrador do portal. A primeira conta criada vira admin.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hide">
+  <div class="top"><div class="wrap top-in">
+    <div class="brand"><span class="k">MKT</span> Portal <span class="muted" style="font-weight:600">· Painel</span></div>
+    <button id="logout" class="btn sm">Sair</button>
+  </div></div>
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab" data-tab="banners" aria-current="true">Banners</button>
+      <button class="tab" data-tab="guias">Guias (destaques)</button>
+      <button class="tab" data-tab="site">Dados do site</button>
+      <button class="tab" data-tab="materias">Matérias</button>
+    </div>
+    <div id="globalStatus" class="status"></div>
+
+    <!-- BANNERS -->
+    <section id="tab-banners">
+      <div class="card">
+        <h2 id="spFormTitle">Novo banner</h2>
+        <input type="hidden" id="spId">
+        <label>Nome (referência interna)</label><input id="spName" placeholder="Ex.: Padaria do João">
+        <label>Imagem do banner (recomendado 1200×300)</label>
+        <input id="spFile" type="file" accept="image/*">
+        <img id="spPrev" class="thumbprev hide">
+        <div class="row">
+          <div><label>Link ao clicar (opcional)</label><input id="spLink" placeholder="https://..."></div>
+          <div><label>Posição</label><select id="spPos"><option value="ambos">Todos (topo, meio e rodapé)</option><option value="topo">Só topo</option><option value="meio">Só meio (entre a 10ª e 11ª notícia)</option><option value="rodape">Só rodapé</option></select></div>
+        </div>
+        <div class="row">
+          <div><label>Ordem</label><input id="spSort" type="number" value="0"></div>
+          <div><label>Ativo</label><select id="spActive"><option value="true">Sim</option><option value="false">Não</option></select></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button id="spSave" class="btn pri">Salvar banner</button>
+          <button id="spReset" class="btn">Limpar</button>
+        </div>
+      </div>
+      <h2>Banners cadastrados</h2>
+      <div id="spList" class="list"></div>
+    </section>
+
+    <!-- GUIAS -->
+    <section id="tab-guias" class="hide">
+      <div class="card">
+        <h2 id="brFormTitle">Novo Guia / marca</h2>
+        <input type="hidden" id="brId">
+        <label>Nome (aparece embaixo do ícone)</label><input id="brName" placeholder="Ex.: Guia Bacia do Juquery">
+        <label>Logo (quadrado, ex.: 220×220)</label>
+        <input id="brFile" type="file" accept="image/*"><img id="brPrev" class="thumbprev hide">
+        <div class="row">
+          <div><label>Instagram (URL) — opcional</label><input id="brInsta" placeholder="https://instagram.com/..."></div>
+          <div><label>Ordem</label><input id="brSort" type="number" value="0"></div>
+        </div>
+        <label>Ativo</label><select id="brActive"><option value="true">Sim</option><option value="false">Não</option></select>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button id="brSave" class="btn pri">Salvar Guia</button>
+          <button id="brReset" class="btn">Limpar</button>
+        </div>
+      </div>
+      <h2>Guias cadastrados</h2>
+      <div id="brList" class="list"></div>
+    </section>
+
+    <!-- SITE -->
+    <section id="tab-site" class="hide">
+      <div class="card">
+        <h2>Dados do site</h2>
+        <label>Tagline (pode usar &lt;b&gt; e &lt;i&gt;)</label><input id="s_tagline">
+        <div class="row">
+          <div><label>WhatsApp 1 (só números, com DDI)</label><input id="s_wa1" placeholder="5511934503566"></div>
+          <div><label>WhatsApp 2</label><input id="s_wa2" placeholder="5513996820331"></div>
+        </div>
+        <div class="row">
+          <div><label>Instagram (URL)</label><input id="s_instagram"></div>
+          <div><label>Facebook (URL)</label><input id="s_facebook"></div>
+        </div>
+        <div class="row">
+          <div><label>Telegram (URL)</label><input id="s_telegram"></div>
+          <div><label>Threads (URL)</label><input id="s_threads"></div>
+        </div>
+        <label>Site "Desenvolvido por" (URL)</label><input id="s_devby_url">
+        <div style="margin-top:14px"><button id="siteSave" class="btn pri">Salvar dados do site</button></div>
+      </div>
+    </section>
+
+    <!-- MATÉRIAS -->
+    <section id="tab-materias" class="hide">
+      <div class="card">
+        <h2 id="arFormTitle">Nova matéria</h2>
+        <input type="hidden" id="arId">
+        <label>Título</label><input id="arTitle">
+        <label>Resumo (lide)</label><textarea id="arSummary" style="min-height:70px"></textarea>
+        <label>Conteúdo (texto da matéria — sem citar a fonte)</label><textarea id="arContent"></textarea>
+        <div class="row">
+          <div><label>Editoria (tag)</label><select id="arSection">
+            <option value="guia">Guias Comerciais</option>
+            <option value="politico">O Futuro Político</option>
+            <option value="marketing">Marketing 2.0</option>
+            <option value="scv">Guia Só Curtindo a Vida</option>
+          </select></div>
+          <div><label>Subtag (ex.: Luto, Leis) — opcional</label><input id="arCategory" placeholder="Notícia"></div>
+        </div>
+        <div class="row">
+          <div><label>Cidade</label><input id="arCity"></div>
+          <div><label>Publicado em</label><input id="arDate" type="datetime-local"></div>
+        </div>
+        <label>Capa</label><input id="arCover" type="file" accept="image/*"><img id="arCoverPrev" class="thumbprev hide">
+        <label>Galeria de fotos (pode escolher várias)</label><input id="arGallery" type="file" accept="image/*" multiple>
+        <div id="arGalleryPrev" class="ggrid"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button id="arSave" class="btn pri">Salvar matéria</button>
+          <button id="arReset" class="btn">Limpar</button>
+        </div>
+      </div>
+      <h2>Últimas matérias</h2>
+      <div id="arList" class="list"></div>
+    </section>
+  </div>
+  <div class="foot">MKT Portal — Grupo Marketing 2.0</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SB_URL="https://yuqidbvfilomxkwaaerl.supabase.co";
+const SB_KEY="sb_publishable_t3Qiwi-26sBX-0mbtdjXCA__h26yp3p";
+const BUCKET="banners";
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+const $=id=>document.getElementById(id);
+function show(el,on){el.classList.toggle("hide",!on);}
+function status(el,msg,kind){el.textContent=msg;el.className="status show "+(kind||"");}
+function clearStatus(el){el.className="status";}
+
+// ---------- AUTH ----------
+let mode="login";
+$("toggleAuth").onclick=e=>{e.preventDefault();mode=mode==="login"?"signup":"login";
+  $("authTitle").textContent=mode==="login"?"Entrar":"Criar conta";
+  $("authBtn").textContent=mode==="login"?"Entrar":"Criar conta";
+  $("toggleAuth").textContent=mode==="login"?"Primeiro acesso? Criar conta":"Já tenho conta — entrar";
+  clearStatus($("authStatus"));};
+$("authBtn").onclick=async()=>{
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password){status($("authStatus"),"Preencha e-mail e senha.","err");return;}
+  $("authBtn").disabled=true;
+  try{
+    if(mode==="signup"){
+      const {error}=await sb.auth.signUp({email,password});
+      if(error)throw error;
+      status($("authStatus"),"Conta criada! Se pedir confirmação por e-mail, confirme e depois entre.","ok");
+      mode="login";$("authTitle").textContent="Entrar";$("authBtn").textContent="Entrar";
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password});
+      if(error)throw error;
+    }
+  }catch(e){status($("authStatus"),traduz(e.message),"err");}
+  $("authBtn").disabled=false;
+};
+$("logout").onclick=async()=>{await sb.auth.signOut();location.reload();};
+function traduz(m){m=(m||"").toLowerCase();
+  if(m.includes("invalid login"))return"E-mail ou senha incorretos.";
+  if(m.includes("already registered"))return"Esse e-mail já tem conta — faça login.";
+  if(m.includes("password"))return"Senha fraca (mínimo 6 caracteres).";
+  if(m.includes("confirm"))return"Confirme seu e-mail antes de entrar.";
+  return m;}
+
+sb.auth.onAuthStateChange((_e,session)=>{ session?enterApp():showLogin(); });
+sb.auth.getSession().then(({data})=>{ data.session?enterApp():showLogin(); });
+function showLogin(){show($("loginView"),true);show($("appView"),false);}
+function enterApp(){show($("loginView"),false);show($("appView"),true);loadSponsors();loadBrandsAdmin();loadSettings();loadArticles();}
+
+// ---------- TABS ----------
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-current",String(x===t)));
+  ["banners","guias","site","materias"].forEach(n=>show($("tab-"+n),n===t.dataset.tab));
+});
+
+// ---------- helpers ----------
+function slugify(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,70);}
+async function uploadImg(file,prefix){
+  const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+  const path=prefix+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,7)+"."+ext;
+  const {error}=await sb.storage.from(BUCKET).upload(path,file,{upsert:true,contentType:file.type});
+  if(error)throw error;
+  return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+// ---------- BANNERS ----------
+$("spFile").onchange=e=>{const f=e.target.files[0];if(f){$("spPrev").src=URL.createObjectURL(f);show($("spPrev"),true);}};
+$("spReset").onclick=resetSp;
+function resetSp(){$("spId").value="";$("spName").value="";$("spFile").value="";$("spLink").value="";$("spPos").value="ambos";$("spSort").value="0";$("spActive").value="true";show($("spPrev"),false);$("spFormTitle").textContent="Novo banner";}
+async function loadSponsors(){
+  const {data,error}=await sb.from("sponsors").select("*").order("sort",{ascending:true}).order("created_at",{ascending:false});
+  const el=$("spList");
+  if(error){el.innerHTML='<div class="muted">Erro ao carregar.</div>';return;}
+  if(!data.length){el.innerHTML='<div class="muted">Nenhum banner ainda.</div>';return;}
+  el.innerHTML=data.map(s=>'<div class="item"><img src="'+(s.image_url||"")+'" alt=""><div class="meta"><b>'+(s.name||"(sem nome)")+'</b>'+
+    '<span class="pill '+(s.active?"on":"off")+'">'+(s.active?"ativo":"inativo")+'</span> <span class="pill">'+({topo:"topo",rodape:"rodapé",ambos:"topo+rodapé"}[s.position]||s.position)+'</span> <span class="pill">ordem '+s.sort+'</span></div>'+
+    '<div class="actions"><button class="btn sm" onclick="editSp('+s.id+')">Editar</button><button class="btn sm danger" onclick="delSp('+s.id+')">Excluir</button></div></div>').join("");
+  window._sp=data;
+}
+window.editSp=id=>{const s=(window._sp||[]).find(x=>x.id===id);if(!s)return;
+  $("spId").value=s.id;$("spName").value=s.name||"";$("spLink").value=s.link_url||"";$("spPos").value=s.position||"ambos";$("spSort").value=s.sort||0;$("spActive").value=String(s.active);
+  if(s.image_url){$("spPrev").src=s.image_url;show($("spPrev"),true);}else show($("spPrev"),false);
+  $("spFile").value="";$("spFormTitle").textContent="Editar banner";window.scrollTo(0,0);};
+window.delSp=async id=>{ if(!confirmSoft())return; const {error}=await sb.from("sponsors").delete().eq("id",id);
+  if(error)status($("globalStatus"),"Erro ao excluir: "+error.message,"err");else{status($("globalStatus"),"Banner excluído.","ok");loadSponsors();}};
+$("spSave").onclick=async()=>{
+  const id=$("spId").value,file=$("spFile").files[0];
+  const row={name:$("spName").value.trim(),link_url:$("spLink").value.trim()||null,position:$("spPos").value,sort:parseInt($("spSort").value||"0",10),active:$("spActive").value==="true"};
+  $("spSave").disabled=true;
+  try{
+    if(file)row.image_url=await uploadImg(file,"sponsors");
+    if(!id&&!row.image_url)throw new Error("Escolha uma imagem para o banner.");
+    let error;
+    if(id)({error}=await sb.from("sponsors").update(row).eq("id",id));
+    else ({error}=await sb.from("sponsors").insert(row));
+    if(error)throw error;
+    status($("globalStatus"),"Banner salvo.","ok");resetSp();loadSponsors();
+  }catch(e){status($("globalStatus"),"Erro: "+e.message,"err");}
+  $("spSave").disabled=false;
+};
+
+// ---------- GUIAS / MARCAS ----------
+$("brFile").onchange=e=>{const f=e.target.files[0];if(f){$("brPrev").src=URL.createObjectURL(f);show($("brPrev"),true);}};
+$("brReset").onclick=resetBr;
+function resetBr(){$("brId").value="";$("brName").value="";$("brFile").value="";$("brInsta").value="";$("brSort").value="0";$("brActive").value="true";show($("brPrev"),false);$("brFormTitle").textContent="Novo Guia / marca";}
+async function loadBrandsAdmin(){
+  const {data,error}=await sb.from("brands").select("*").order("sort",{ascending:true}).order("name",{ascending:true});
+  const el=$("brList");
+  if(error){el.innerHTML='<div class="muted">Erro ao carregar.</div>';return;}
+  if(!data.length){el.innerHTML='<div class="muted">Nenhum Guia ainda.</div>';return;}
+  el.innerHTML=data.map(b=>'<div class="item"><img style="width:48px;height:48px;border-radius:50%" src="'+(b.logo_url||"")+'" alt=""><div class="meta"><b>'+(b.name||"")+'</b><span class="pill '+(b.active?"on":"off")+'">'+(b.active?"ativo":"inativo")+'</span> <span class="pill">ordem '+b.sort+'</span>'+(b.instagram_url?' <span class="pill">IG</span>':'')+'</div>'+
+    '<div class="actions"><button class="btn sm" onclick="editBr('+b.id+')">Editar</button><button class="btn sm danger" onclick="delBr('+b.id+')">Excluir</button></div></div>').join("");
+  window._br=data;
+}
+window.editBr=id=>{const b=(window._br||[]).find(x=>x.id===id);if(!b)return;
+  $("brId").value=b.id;$("brName").value=b.name||"";$("brInsta").value=b.instagram_url||"";$("brSort").value=b.sort||0;$("brActive").value=String(b.active);
+  if(b.logo_url){$("brPrev").src=b.logo_url;show($("brPrev"),true);}else show($("brPrev"),false);
+  $("brFile").value="";$("brFormTitle").textContent="Editar Guia";window.scrollTo(0,0);};
+window.delBr=async id=>{if(!confirmSoft())return;const {error}=await sb.from("brands").delete().eq("id",id);
+  if(error)status($("globalStatus"),"Erro ao excluir: "+error.message,"err");else{status($("globalStatus"),"Guia excluído.","ok");loadBrandsAdmin();}};
+$("brSave").onclick=async()=>{
+  const id=$("brId").value,file=$("brFile").files[0];
+  const name=$("brName").value.trim();
+  if(!name){status($("globalStatus"),"Dê um nome ao Guia.","err");return;}
+  const row={name,instagram_url:$("brInsta").value.trim()||null,sort:parseInt($("brSort").value||"0",10),active:$("brActive").value==="true"};
+  $("brSave").disabled=true;
+  try{
+    if(file)row.logo_url=await uploadImg(file,"guias");
+    let error;
+    if(id)({error}=await sb.from("brands").update(row).eq("id",id));
+    else ({error}=await sb.from("brands").insert(row));
+    if(error)throw error;
+    status($("globalStatus"),"Guia salvo.","ok");resetBr();loadBrandsAdmin();
+  }catch(e){status($("globalStatus"),"Erro: "+e.message,"err");}
+  $("brSave").disabled=false;
+};
+
+// ---------- SITE SETTINGS ----------
+const SKEYS=["tagline","wa1","wa2","instagram","facebook","telegram","threads","devby_url"];
+async function loadSettings(){
+  const {data}=await sb.from("site_settings").select("key,value");
+  const map={};(data||[]).forEach(r=>map[r.key]=r.value);
+  SKEYS.forEach(k=>{const el=$("s_"+k);if(el)el.value=map[k]||"";});
+}
+$("siteSave").onclick=async()=>{
+  const rows=SKEYS.map(k=>({key:k,value:$("s_"+k).value,updated_at:new Date().toISOString()}));
+  $("siteSave").disabled=true;
+  const {error}=await sb.from("site_settings").upsert(rows);
+  status($("globalStatus"),error?("Erro: "+error.message):"Dados do site salvos.",error?"err":"ok");
+  $("siteSave").disabled=false;
+};
+
+// ---------- MATÉRIAS ----------
+let galleryUrls=[];
+$("arCover").onchange=e=>{const f=e.target.files[0];if(f){$("arCoverPrev").src=URL.createObjectURL(f);show($("arCoverPrev"),true);}};
+$("arGallery").onchange=e=>{const g=$("arGalleryPrev");g.innerHTML="";[...e.target.files].forEach(f=>{const i=document.createElement("img");i.src=URL.createObjectURL(f);g.appendChild(i);});};
+$("arReset").onclick=resetAr;
+function resetAr(){["arId","arTitle","arSummary","arContent","arCategory","arCity"].forEach(i=>$(i).value="");$("arSection").value="guia";$("arCover").value="";$("arGallery").value="";$("arGalleryPrev").innerHTML="";show($("arCoverPrev"),false);galleryUrls=[];$("arDate").value=localNow();$("arFormTitle").textContent="Nova matéria";}
+function localNow(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16);}
+async function loadArticles(){
+  const {data,error}=await sb.from("articles").select("id,title,section,category,city,published_at").order("published_at",{ascending:false,nullsFirst:false}).limit(50);
+  const el=$("arList");
+  if(error){el.innerHTML='<div class="muted">Erro ao carregar.</div>';return;}
+  if(!data.length){el.innerHTML='<div class="muted">Nenhuma matéria.</div>';return;}
+  el.innerHTML=data.map(a=>'<div class="item"><div class="meta"><b>'+esc(a.title||"(sem título)")+'</b><span class="pill">'+(a.section||"")+'</span> '+(a.category?'<span class="pill">'+esc(a.category)+'</span> ':'')+'<span class="muted">'+(a.city||"")+'</span></div>'+
+    '<div class="actions"><button class="btn sm" onclick="editAr('+a.id+')">Editar</button><button class="btn sm danger" onclick="delAr('+a.id+')">Excluir</button></div></div>').join("");
+}
+function esc(s){return(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+window.editAr=async id=>{
+  const {data,error}=await sb.from("articles").select("*").eq("id",id).limit(1);
+  if(error||!data||!data[0]){status($("globalStatus"),"Não consegui abrir a matéria.","err");return;}
+  const a=data[0];
+  $("arId").value=a.id;$("arTitle").value=a.title||"";$("arSummary").value=a.summary||"";$("arContent").value=(a.content||"").replace(/<\/p>\s*<p>/gi,"\n\n").replace(/<\/?p>/gi,"");
+  $("arSection").value=a.section||"guia";$("arCategory").value=a.category||"";$("arCity").value=a.city||"";
+  $("arDate").value=a.published_at?new Date(a.published_at).toISOString().slice(0,16):localNow();
+  galleryUrls=Array.isArray(a.gallery)?a.gallery.slice():[];
+  $("arGalleryPrev").innerHTML=galleryUrls.map(u=>'<img src="'+esc(u)+'">').join("");
+  if(a.image_url){$("arCoverPrev").src=a.image_url;show($("arCoverPrev"),true);}else show($("arCoverPrev"),false);
+  $("arCover").value="";$("arGallery").value="";window._arCover=a.image_url||null;
+  $("arFormTitle").textContent="Editar matéria";window.scrollTo(0,0);
+};
+window.delAr=async id=>{ if(!confirmSoft())return; const {error}=await sb.from("articles").delete().eq("id",id);
+  if(error)status($("globalStatus"),"Erro ao excluir: "+error.message,"err");else{status($("globalStatus"),"Matéria excluída.","ok");loadArticles();}};
+$("arSave").onclick=async()=>{
+  const id=$("arId").value;
+  const title=$("arTitle").value.trim();
+  if(!title){status($("globalStatus"),"Dê um título à matéria.","err");return;}
+  $("arSave").disabled=true;
+  try{
+    let cover=window._arCover||null;
+    if($("arCover").files[0])cover=await uploadImg($("arCover").files[0],"capas");
+    let gal=galleryUrls.slice();
+    for(const f of $("arGallery").files){gal.push(await uploadImg(f,"galeria"));}
+    const paras=$("arContent").value.trim().split(/\n{2,}/).filter(Boolean).map(p=>"<p>"+esc(p).replace(/\n/g,"<br>")+"</p>").join("");
+    const dt=$("arDate").value?new Date($("arDate").value).toISOString():new Date().toISOString();
+    const row={title,summary:$("arSummary").value.trim()||null,content:paras||null,section:$("arSection").value,
+      category:$("arCategory").value.trim()||"Notícia",city:$("arCity").value.trim()||null,
+      image_url:cover,gallery:gal,published_at:dt};
+    let error;
+    if(id)({error}=await sb.from("articles").update(row).eq("id",id));
+    else{row.slug=slugify(title)+"-"+Math.random().toString(36).slice(2,6);({error}=await sb.from("articles").insert(row));}
+    if(error)throw error;
+    status($("globalStatus"),"Matéria salva.","ok");resetAr();loadArticles();
+  }catch(e){status($("globalStatus"),"Erro: "+e.message,"err");}
+  $("arSave").disabled=false;
+};
+function confirmSoft(){return window.confirm("Tem certeza? Essa ação não pode ser desfeita.");}
+resetAr();
+</script>
+</body>
+</html>

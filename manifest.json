@@ -1,0 +1,18 @@
+{
+  "name": "MKT Portal - Marketing 2.0",
+  "short_name": "MKT Portal",
+  "description": "O portal de notícias e atualizações do Marketing 2.0",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#A01313",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

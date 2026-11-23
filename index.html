@@ -166,8 +166,6 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-block:24px 32px;
 .wa-fab svg{width:34px;height:34px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15))}
 .wa-fab::before{content:'Fale conosco!';position:absolute;right:70px;top:50%;transform:translateY(-50%);background:var(--bg,#fff);color:var(--fg,#222);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;box-shadow:0 2px 12px rgba(0,0,0,.15);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s}
 .wa-fab:hover::before{opacity:1}
-.wa-pulse{animation:waPulse 2s ease-in-out infinite}
-@keyframes waPulse{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,.45)}50%{box-shadow:0 4px 30px rgba(37,211,102,.7),0 0 0 12px rgba(37,211,102,.12)}}
 @media(max-width:430px){.wa-fab{width:56px;height:56px}.wa-fab svg{width:32px;height:32px}.wa-fab::before{display:none}}
 .adbar{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
 .adtrack{display:flex;transition:transform .45s ease}
@@ -235,7 +233,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-block:24px 32px;
   <div class="copy">© 2026 MKT Portal</div>
 </div></footer>
 
-<a class="wa-fab wa-pulse" href="https://wa.me/5511934503566" target="_blank" rel="noopener" aria-label="Fale conosco no WhatsApp">
+<a class="wa-fab" href="https://wa.me/5511934503566" target="_blank" rel="noopener" aria-label="Fale conosco no WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#fff" d="M16.04 4C9.9 4 4.9 9 4.9 15.14c0 2.17.64 4.2 1.74 5.92L4.5 28l7.12-2.08a11.1 11.1 0 0 0 4.42.92h.01c6.14 0 11.14-5 11.14-11.14C27.19 9 22.18 4 16.04 4zm0 20.4h-.01a9.2 9.2 0 0 1-4.68-1.28l-.34-.2-4.23 1.24 1.26-4.12-.22-.35a9.17 9.17 0 0 1-1.4-4.88c0-5.07 4.13-9.2 9.21-9.2 2.46 0 4.77.96 6.5 2.7a9.13 9.13 0 0 1 2.7 6.5c0 5.08-4.13 9.2-9.2 9.2zm5.05-6.9c-.28-.14-1.63-.8-1.88-.9-.25-.1-.44-.14-.62.14-.18.28-.71.9-.87 1.08-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.22-1.37-.82-.73-1.37-1.63-1.53-1.9-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.49.14-.16.18-.28.28-.46.09-.18.05-.35-.02-.49-.07-.14-.62-1.5-.85-2.05-.22-.53-.45-.46-.62-.47l-.53-.01c-.18 0-.48.07-.73.35-.25.28-.96.94-.96 2.3 0 1.36.98 2.67 1.12 2.85.14.18 1.93 2.95 4.68 4.14.65.28 1.16.45 1.56.58.66.21 1.25.18 1.72.11.52-.08 1.63-.67 1.86-1.31.23-.64.23-1.19.16-1.31-.07-.12-.25-.19-.53-.33z"/></svg>
 </a>
 

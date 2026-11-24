@@ -2,6 +2,16 @@
   command = "echo 'static site'"
   publish = "."
 
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+
 [[headers]]
   for = "/sw.js"
   [headers.values]

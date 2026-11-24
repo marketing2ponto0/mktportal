@@ -321,6 +321,14 @@ select:focus{outline:none;border-color:var(--red)}
   .drawer{width:100%}
   .banner-grid{grid-template-columns:1fr}
 }
+/* ══ DESTAQUES ══ */
+.brand-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
+.brand-admin-card{background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.brand-admin-logo{width:72px;height:72px;border-radius:50%;object-fit:contain;background:#f0f0f0;border:2px solid #e2e2e2}
+.brand-admin-logo.placeholder{display:flex;align-items:center;justify-content:center;font-size:24px}
+.brand-admin-name{font-weight:700;font-size:13px;color:#111}
+.brand-admin-actions{display:flex;gap:6px;width:100%}
+.brand-admin-actions .btn{flex:1;font-size:11px;padding:5px 4px}
 </style>
 </head>
 <body>
@@ -915,14 +923,6 @@ async function confirmDelete(){
   }catch(e){toast("Erro: "+e.message,1);}
 }
 
-/* ══ DESTAQUES ══ */
-.brand-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
-.brand-admin-card{background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
-.brand-admin-logo{width:72px;height:72px;border-radius:50%;object-fit:contain;background:#f0f0f0;border:2px solid #e2e2e2}
-.brand-admin-logo.placeholder{display:flex;align-items:center;justify-content:center;font-size:24px}
-.brand-admin-name{font-weight:700;font-size:13px;color:#111}
-.brand-admin-actions{display:flex;gap:6px;width:100%}
-.brand-admin-actions .btn{flex:1;font-size:11px;padding:5px 4px}
 /* ══ GALERIA ══ */
 const BUCKET="admin-media";
 let galleryItems=[];
@@ -1033,7 +1033,7 @@ function renderBrands(){
   document.getElementById("brandEmpty").style.display=brandsData.length?"none":"block";
   grid.innerHTML=brandsData.map(b=>{
     const logoHtml=b.logo_url
-      ?'<img class="brand-admin-logo" src="'+esc(b.logo_url)+'" onerror="this.style.display='none'">'
+      ?'<img class="brand-admin-logo" src="'+esc(b.logo_url)+'" onerror="this.style.display=\'none\'">'
       :'<div class="brand-admin-logo placeholder">🏷️</div>';
     const statusDot=b.active?'<span style="color:#22c55e">●</span>':'<span style="color:#ccc">●</span>';
     return`<div class="brand-admin-card">

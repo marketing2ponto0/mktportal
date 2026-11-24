@@ -598,11 +598,11 @@ select:focus{outline:none;border-color:var(--red)}
 
 <!-- CONFIRMAR DELETE -->
 <!-- DRAWER Marca/Destaque -->
-<div class="drawer-bg" id="bdDrawerBg" onclick="closeBrandDrawer(event)" style="display:none">
+<div class="drawer-bg" id="bdDrawerBg" onclick="closeBrandDrawer(event)">
   <div class="drawer" onclick="event.stopPropagation()">
-    <div class="drawer-header">
+    <div class="drawer-head">
       <h2 id="bdDrawerTitle">Nova marca</h2>
-      <button class="btn btn-ghost btn-icon" onclick="document.getElementById('bdDrawerBg').style.display='none'">✕</button>
+      <button class="btn btn-ghost btn-icon" onclick="document.getElementById('bdDrawerBg').classList.remove('open')">✕</button>
     </div>
     <div class="drawer-body">
       <input type="hidden" id="bdId">
@@ -641,8 +641,8 @@ select:focus{outline:none;border-color:var(--red)}
         </select>
       </div>
     </div>
-    <div class="drawer-footer">
-      <button class="btn btn-ghost" onclick="document.getElementById('bdDrawerBg').style.display='none'">Cancelar</button>
+    <div class="drawer-foot">
+      <button class="btn btn-ghost" onclick="document.getElementById('bdDrawerBg').classList.remove('open')">Cancelar</button>
       <button class="btn btn-primary" onclick="saveBrand()">Salvar</button>
     </div>
   </div>
@@ -1107,7 +1107,7 @@ function openNewBrand(){
   document.getElementById("bdZoomVal").textContent="100%";
   document.getElementById("bdActive").value="true";
   document.getElementById("bdDrawerTitle").textContent="Nova marca";
-  document.getElementById("bdDrawerBg").style.display="flex";
+  document.getElementById("bdDrawerBg").classList.add("open");
   updateZoomPreview();
 }
 
@@ -1125,13 +1125,13 @@ function editBrand(id){
   document.getElementById("bdZoomVal").textContent=zoom+"%";
   document.getElementById("bdActive").value=String(b.active!==false);
   document.getElementById("bdDrawerTitle").textContent="Editar marca";
-  document.getElementById("bdDrawerBg").style.display="flex";
+  document.getElementById("bdDrawerBg").classList.add("open");
   updateZoomPreview();
 }
 
 function closeBrandDrawer(e){
   if(e&&e.target!==document.getElementById("bdDrawerBg"))return;
-  document.getElementById("bdDrawerBg").style.display="none";
+  document.getElementById("bdDrawerBg").classList.remove("open");
 }
 
 async function saveBrand(){
@@ -1153,7 +1153,7 @@ async function saveBrand(){
       await sbPost("brands",payload);
       toast("Marca criada ✓");
     }
-    document.getElementById("bdDrawerBg").style.display="none";
+    document.getElementById("bdDrawerBg").classList.remove("open");
     loadBrands();
   }catch(e){toast("Erro: "+e.message,1);}
 }

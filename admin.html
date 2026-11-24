@@ -483,7 +483,19 @@ select:focus{outline:none;border-color:var(--red)}
         </div>
         <div class="field" style="margin:0">
           <label>Cidade</label>
-          <input id="eCity" placeholder="Ex: Franco da Rocha">
+          <input id="eCity" placeholder="Ex: Franco da Rocha" list="cityList">
+          <datalist id="cityList">
+            <option value="Franco da Rocha">
+            <option value="Francisco Morato">
+            <option value="Caieiras">
+            <option value="Mairiporã">
+            <option value="Campo Limpo Paulista">
+            <option value="Várzea Paulista">
+            <option value="Jundiaí">
+            <option value="São Paulo">
+            <option value="Guarulhos">
+            <option value="Cajamar">
+          </datalist>
         </div>
       </div>
       <div class="field" style="margin-top:14px">
@@ -684,7 +696,8 @@ function renderTable(list){
 function openNew(){
   document.getElementById("drawerTitle").textContent="Nova matéria";
   document.getElementById("editId").value="";
-  ["eTitle","eSummary","eContent","eImage","eCity","eSection"].forEach(id=>document.getElementById(id).value="");
+  ["eTitle","eSummary","eContent","eImage","eSection"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("eCity").value="Franco da Rocha";
   document.getElementById("eCategory").value="Notícia";
   document.getElementById("eImgPrev").classList.remove("show");
   document.getElementById("drawerBg").classList.add("open");

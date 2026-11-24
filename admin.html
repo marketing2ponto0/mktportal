@@ -5,206 +5,483 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin — MKT Portal</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#0a0a0a;
+  --s1:#111111;
+  --s2:#1a1a1a;
+  --s3:#222222;
+  --bdr:#2e2e2e;
+  --red:#cc1a1a;
+  --red2:#a81414;
+  --red-dim:#cc1a1a18;
+  --red-mid:#cc1a1a35;
+  --txt:#f8f8f8;
+  --txt2:#9aa0a8;
+  --txt3:#555d6a;
+  --ok:#22c55e;
+  --warn:#f59e0b;
+  --err:#cc1a1a;
+  --ok-bg:#22c55e18;
+  --err-bg:#cc1a1a18;
+  --white:#ffffff;
+  --sidebar:56px;
+  --drawer:490px;
+  --r:8px;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f0f0f;color:#f1f5f9;min-height:100vh}
-header{background:#1a1a1a;border-bottom:1px solid #2d2d2d;padding:14px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
-header h1{font-size:17px;font-weight:700;color:#f9fafb}
-.tabs-nav{display:flex;gap:4px;margin-left:auto}
-.tab-btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#2d2d2d;color:#9ca3af;transition:all .15s}
-.tab-btn.active{background:#b8860b;color:#fff}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
-.btn-red{background:#ef4444;color:#fff}.btn-red:hover{background:#dc2626}
-.btn-gold{background:#b8860b;color:#fff}.btn-gold:hover{background:#9a6f00}
-.btn-gray{background:#374151;color:#f1f5f9}.btn-gray:hover{background:#4b5563}
-.btn-green{background:#16a34a;color:#fff}.btn-green:hover{background:#15803d}
-.container{max-width:1100px;margin:0 auto;padding:16px}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Inter',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* ── LAYOUT ── */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+#adminApp{display:none;height:100vh;overflow:hidden}
+.shell{display:flex;height:100%}
+
+/* sidebar */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--red);
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 0;gap:4px;position:relative;z-index:20
+}
+.sb-logo{
+  width:38px;height:38px;border-radius:10px;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:10px;cursor:pointer;flex-shrink:0
+}
+.sb-item{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;cursor:pointer;position:relative;
+  transition:background .15s;color:rgba(255,255,255,.65)
+}
+.sb-item:hover{background:rgba(255,255,255,.12);color:#fff}
+.sb-item.on{background:rgba(255,255,255,.18);color:#fff}
+.sb-item .tip{
+  display:none;position:absolute;left:52px;
+  background:var(--s2);border:1px solid var(--bdr);
+  padding:4px 10px;border-radius:6px;white-space:nowrap;
+  font-size:12px;font-weight:500;color:var(--txt);
+  pointer-events:none;z-index:50
+}
+.sb-item:hover .tip{display:block}
+.sb-sep{width:28px;height:1px;background:rgba(255,255,255,.2);margin:4px 0}
+.sb-bottom{margin-top:auto}
+
+/* main */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+.topbar{
+  height:52px;flex-shrink:0;
+  background:var(--white);border-bottom:1px solid #e2e2e2;
+  display:flex;align-items:center;padding:0 20px;gap:12px
+}
+.topbar-title{font-size:15px;font-weight:800;color:#111;letter-spacing:-.3px}
+.topbar-sub{font-size:12px;color:#888;margin-left:3px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+.content{flex:1;overflow-y:auto;padding:20px;background:#f4f4f4}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{
+  background:#fff;border:1px solid #e2e2e2;border-radius:var(--r);
+  padding:14px 16px;position:relative;overflow:hidden
+}
+.stat-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--red)
+}
+.stat-label{font-size:11px;font-weight:600;color:#888;margin-bottom:6px}
+.stat-value{font-size:28px;font-weight:800;color:#111;letter-spacing:-1.5px;line-height:1}
+.stat-delta{font-size:11px;color:#aaa;margin-top:5px}
+
+/* ── TOOLBAR ── */
 .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.toolbar input,.toolbar select{padding:8px 12px;background:#1a1a1a;border:1px solid #374151;border-radius:8px;color:#f1f5f9;font-size:13px}
-.toolbar input{flex:1;min-width:180px}
-.toolbar input:focus,.toolbar select:focus{outline:none;border-color:#b8860b}
-.stats{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.stat{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:10px;padding:10px 14px;min-width:90px}
-.stat .label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em}
-.stat .value{font-size:20px;font-weight:800;color:#f9fafb;margin-top:2px}
-table{width:100%;border-collapse:collapse;background:#1a1a1a;border:1px solid #2d2d2d;border-radius:12px;overflow:hidden}
-th{background:#111;padding:9px 10px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;text-align:left}
-td{padding:9px 10px;font-size:12px;border-top:1px solid #2d2d2d;vertical-align:middle}
-tr:hover td{background:#1f1f1f}
-.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;background:#374151;color:#9ca3af}
-.img-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#111}
-.title-cell{max-width:260px}
-.title-cell strong{color:#f9fafb;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px}
-.title-cell small{color:#6b7280;font-size:10px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.actions{display:flex;gap:5px;white-space:nowrap}
-/* modal */
-.modal-bg{display:none;position:fixed;inset:0;background:#000b;z-index:100;align-items:center;justify-content:center;padding:16px}
-.modal-bg.open{display:flex}
-.modal{background:#1a1a1a;border:1px solid #374151;border-radius:16px;padding:20px;max-width:540px;width:100%;max-height:88vh;overflow-y:auto}
-.modal h2{font-size:15px;font-weight:700;margin-bottom:14px}
-.field{margin-bottom:11px}
-.field label{display:block;font-size:10px;color:#9ca3af;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
-.field input,.field textarea,.field select{width:100%;padding:8px 10px;background:#111;border:1px solid #374151;border-radius:8px;color:#f1f5f9;font-size:13px}
-.field textarea{height:70px;resize:vertical}
-.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:#b8860b}
-.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
-/* banner cards */
+.search-wrap{position:relative;flex:1;min-width:200px;max-width:360px}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#999;pointer-events:none}
+.search-wrap input{
+  width:100%;padding:8px 12px 8px 34px;
+  background:#fff;border:1px solid #ddd;border-radius:var(--r);
+  color:#111;font-size:13px;font-family:inherit;transition:border .15s
+}
+.search-wrap input:focus{outline:none;border-color:var(--red)}
+select{
+  padding:8px 10px;background:#fff;border:1px solid #ddd;
+  border-radius:var(--r);color:#333;font-size:13px;cursor:pointer;font-family:inherit
+}
+select:focus{outline:none;border-color:var(--red)}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:var(--r);border:none;cursor:pointer;
+  font-size:12px;font-weight:600;font-family:inherit;
+  transition:all .15s;white-space:nowrap
+}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:var(--red2)}
+.btn-ghost{background:#fff;color:#444;border:1px solid #ddd}.btn-ghost:hover{background:#f5f5f5;color:#111}
+.btn-danger{background:var(--err-bg);color:var(--red);border:1px solid var(--red-mid)}.btn-danger:hover{background:var(--red-dim)}
+.btn-success{background:var(--ok-bg);color:#16a34a;border:1px solid #22c55e30}.btn-success:hover{background:#22c55e20}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icon{padding:6px;width:30px;height:30px;justify-content:center}
+
+/* ── ARTICLE CARDS ── */
+.art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.art-card{
+  background:#fff;border:1px solid #e2e2e2;border-radius:var(--r);
+  overflow:hidden;transition:box-shadow .15s,border-color .15s;cursor:default
+}
+.art-card:hover{box-shadow:0 2px 14px rgba(204,26,26,.1);border-color:#cc1a1a40}
+.art-card-img{
+  width:100%;height:160px;object-fit:cover;display:block;background:#f0f0f0;
+  position:relative
+}
+.art-card-img-wrap{position:relative}
+.art-card-img-wrap .cat-badge{
+  position:absolute;top:8px;left:8px;
+  background:var(--red);color:#fff;
+  padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700
+}
+.art-card-body{padding:12px}
+.art-card-title{
+  font-size:13px;font-weight:700;color:#111;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-bottom:5px;line-height:1.4
+}
+.art-card-meta{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:#999;margin-bottom:10px;flex-wrap:wrap
+}
+.art-card-meta span{display:flex;align-items:center;gap:3px}
+.art-card-actions{display:flex;gap:6px}
+.art-card-actions .btn{flex:1;justify-content:center}
+.chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.chip-cat{background:#f0f0f0;color:#666}
+.chip-on{background:#dcfce7;color:#16a34a}
+.chip-off{background:var(--err-bg);color:var(--red)}
+.chip-red{background:var(--red-dim);color:var(--red)}
+.empty{text-align:center;padding:48px;color:#aaa;font-size:13px}
+
+/* ── DRAWER ── */
+.drawer-bg{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:#00000066;backdrop-filter:blur(2px)
+}
+.drawer-bg.open{display:block}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;
+  width:var(--drawer);max-width:100%;
+  background:#fff;border-left:1px solid #e2e2e2;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);
+  z-index:101
+}
+.drawer-bg.open .drawer{transform:translateX(0)}
+.drawer-head{
+  padding:16px 20px;border-bottom:3px solid var(--red);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  background:#fff
+}
+.drawer-head h2{font-size:15px;font-weight:800;flex:1;color:#111;letter-spacing:-.3px}
+.drawer-body{flex:1;overflow-y:auto;padding:20px;background:#fff}
+.drawer-foot{
+  padding:14px 20px;border-top:1px solid #e8e8e8;
+  display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;
+  background:#fff
+}
+
+/* ── FORM ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:700;color:#666;margin-bottom:5px}
+.field input,.field textarea,.field select{
+  width:100%;padding:9px 12px;
+  background:#f9f9f9;border:1px solid #e0e0e0;
+  border-radius:var(--r);color:#111;font-size:13px;
+  font-family:inherit;transition:border .15s
+}
+.field textarea{resize:vertical;height:80px;line-height:1.5}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--red);background:#fff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.img-preview{margin-top:8px;width:100%;height:120px;object-fit:cover;border-radius:6px;background:#eee;display:none}
+.img-preview.show{display:block}
+
+/* ── BANNER GRID ── */
 .banner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.banner-card{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:12px;overflow:hidden}
-.banner-card img{width:100%;height:120px;object-fit:cover;display:block;background:#111}
-.banner-card .bc-body{padding:10px}
-.banner-card .bc-title{font-size:13px;font-weight:700;color:#f9fafb;margin-bottom:4px}
-.banner-card .bc-meta{font-size:11px;color:#9ca3af;margin-bottom:8px}
-.banner-card .bc-actions{display:flex;gap:6px}
-.pill-on{background:#16a34a30;color:#4ade80;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
-.pill-off{background:#ef444430;color:#f87171;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
-/* toast */
-.toast{position:fixed;bottom:20px;right:16px;background:#22c55e;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;transform:translateY(80px);opacity:0;transition:all .3s;max-width:280px}
+.bcard{background:#fff;border:1px solid #e2e2e2;border-radius:var(--r);overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.bcard:hover{border-color:var(--red);box-shadow:0 2px 12px rgba(204,26,26,.1)}
+.bcard-img{width:100%;height:130px;object-fit:cover;display:block;background:#eee}
+.bcard-body{padding:12px}
+.bcard-title{font-size:13px;font-weight:700;margin-bottom:5px;color:#111}
+.bcard-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.bcard-actions{display:flex;gap:6px}
+
+/* ── CONFIRM ── */
+.confirm-wrap{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:#00000080;backdrop-filter:blur(3px)}
+.confirm-wrap.open{display:flex}
+.confirm-box{background:#fff;border-radius:12px;padding:28px;max-width:340px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.confirm-box .ico{font-size:38px;margin-bottom:10px}
+.confirm-box h3{font-size:16px;font-weight:800;margin-bottom:6px;color:#111}
+.confirm-box p{font-size:12px;color:#888;margin-bottom:18px}
+.confirm-box .row{display:flex;gap:8px;justify-content:center}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:300;
+  padding:11px 18px;border-radius:10px;
+  font-size:13px;font-weight:600;
+  background:#111;color:#fff;
+  transform:translateY(70px);opacity:0;
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;max-width:300px;
+  border-left:3px solid var(--ok)
+}
 .toast.show{transform:translateY(0);opacity:1}
-.toast.err{background:#ef4444}
-/* login */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh}
-.login-box{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:16px;padding:28px;width:300px;text-align:center}
-.login-box h2{margin-bottom:4px;font-size:19px}
-.login-box p{font-size:12px;color:#9ca3af;margin-bottom:16px}
-.login-box input{width:100%;padding:10px 12px;background:#111;border:1px solid #374151;border-radius:8px;color:#f1f5f9;font-size:14px;margin-bottom:8px}
-.login-box input:focus{outline:none;border-color:#b8860b}
-#loginErr{color:#ef4444;font-size:11px;margin-bottom:8px;min-height:14px}
-#app{display:none}
-.section{display:none}.section.active{display:block}
+.toast.err{border-left-color:var(--red)}
+
+/* ── LOGIN ── */
+.login-box{
+  background:#fff;border-radius:16px;
+  padding:36px;width:320px;text-align:center;
+  box-shadow:0 4px 40px rgba(0,0,0,.3)
+}
+.login-logo{
+  width:56px;height:56px;border-radius:14px;background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin:0 auto 16px
+}
+.login-box h2{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;color:#111}
+.login-box p{font-size:12px;color:#999;margin-bottom:22px}
+.login-box input{
+  width:100%;padding:11px 14px;margin-bottom:8px;
+  background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:var(--r);
+  color:#111;font-size:14px;font-family:inherit;transition:border .15s
+}
+.login-box input:focus{outline:none;border-color:var(--red);background:#fff}
+.login-err{color:var(--red);font-size:11px;min-height:16px;margin-bottom:6px}
+
+/* ── SECTIONS ── */
+.section{display:none}.section.on{display:block}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ddd;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#ccc}
+
+@media(max-width:640px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .drawer{width:100%}
+  .banner-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<div class="login-wrap" id="loginWrap">
+<!-- LOGIN -->
+<div id="loginPage">
   <div class="login-box">
-    <div style="font-size:34px;margin-bottom:8px">🛡️</div>
-    <h2>MKT Portal Admin</h2>
-    <p>Acesso restrito</p>
-    <input type="password" id="pwdInput" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
-    <div id="loginErr"></div>
-    <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="doLogin()">Entrar</button>
+    <div class="login-logo">🗞️</div>
+    <h2>MKT Portal</h2>
+    <p>Painel administrativo</p>
+    <input type="password" id="pwdInput" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">Entrar</button>
   </div>
 </div>
 
-<div id="app">
-<header>
-  <span style="font-size:20px">🗞️</span>
-  <h1>MKT Portal — Admin</h1>
-  <div class="tabs-nav">
-    <button class="tab-btn active" onclick="showSection('materia')">📰 Matérias</button>
-    <button class="tab-btn" onclick="showSection('banner')">🖼️ Banners</button>
+<!-- APP -->
+<div id="adminApp">
+<div class="shell">
+
+  <!-- SIDEBAR vermelha -->
+  <nav class="sidebar">
+    <div class="sb-logo">🗞️</div>
+    <div class="sb-item on" id="nav-materias" onclick="goSection('materias')">
+      📰<span class="tip">Matérias</span>
+    </div>
+    <div class="sb-item" id="nav-banners" onclick="goSection('banners')">
+      🖼️<span class="tip">Banners</span>
+    </div>
+    <div class="sb-sep"></div>
+    <div class="sb-bottom">
+      <div class="sb-item" onclick="logout()">↩<span class="tip">Sair</span></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR branca -->
+    <header class="topbar">
+      <div>
+        <span class="topbar-title" id="topbarTitle">Matérias</span>
+        <span class="topbar-sub" id="topbarSub"></span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="btnNew" onclick="openNew()">+ Nova matéria</button>
+        <button class="btn btn-ghost btn-icon" onclick="refresh()" title="Atualizar">↺</button>
+      </div>
+    </header>
+
+    <!-- CONTENT cinza claro -->
+    <div class="content">
+
+      <!-- MATÉRIAS -->
+      <div class="section on" id="sec-materias">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total de matérias</div>
+            <div class="stat-value" id="stTotal">—</div>
+            <div class="stat-delta" id="stDelta">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Publicadas hoje</div>
+            <div class="stat-value" id="stHoje">—</div>
+            <div class="stat-delta">neste dia</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Esta semana</div>
+            <div class="stat-value" id="stSemana">—</div>
+            <div class="stat-delta">últimos 7 dias</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Categorias</div>
+            <div class="stat-value" id="stCat">—</div>
+            <div class="stat-delta">em uso</div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input id="searchInput" placeholder="Buscar por título ou cidade…" oninput="filterArticles()">
+          </div>
+          <select id="filterCat" onchange="filterArticles()">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select id="filterSection" onchange="filterArticles()">
+            <option value="">Todas as seções</option>
+          </select>
+        </div>
+
+        <div class="art-grid" id="artGrid"></div>
+        <div class="empty" id="emptyMsg" style="display:none">Nenhuma matéria encontrada.</div>
+      </div>
+
+      <!-- BANNERS -->
+      <div class="section" id="sec-banners">
+        <div class="banner-grid" id="bannerGrid"></div>
+        <div class="empty" id="bannerEmpty" style="display:none">
+          Nenhum banner cadastrado.<br>
+          <button class="btn btn-primary" style="margin-top:14px" onclick="openNewBanner()">+ Adicionar banner</button>
+        </div>
+      </div>
+
+    </div>
   </div>
-  <button class="btn btn-gray" onclick="logout()" style="margin-left:8px;padding:5px 10px;font-size:11px">Sair</button>
-</header>
+</div>
+</div>
 
-<div class="container">
-
-  <!-- MATÉRIAS -->
-  <div class="section active" id="sec-materia">
-    <div class="stats">
-      <div class="stat"><div class="label">Total</div><div class="value" id="stTotal">—</div></div>
-      <div class="stat"><div class="label">Hoje</div><div class="value" id="stHoje">—</div></div>
-      <div class="stat"><div class="label">Categorias</div><div class="value" id="stCat">—</div></div>
+<!-- DRAWER matéria -->
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer(event)">
+  <div class="drawer" id="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-head">
+      <h2 id="drawerTitle">Nova matéria</h2>
+      <button class="btn btn-ghost btn-icon" onclick="closeDrawer()">✕</button>
     </div>
-    <div class="toolbar">
-      <input id="search" placeholder="🔍 Buscar por título..." oninput="filterTable()">
-      <select id="filterCat" onchange="filterTable()">
-        <option value="">Todas as categorias</option>
-      </select>
-      <button class="btn btn-gold" onclick="openNew()">+ Nova matéria</button>
-      <button class="btn btn-gray" onclick="loadArticles()">↺</button>
+    <div class="drawer-body">
+      <input type="hidden" id="editId">
+      <div class="field"><label>Título</label><input id="eTitle" placeholder="Título da matéria"></div>
+      <div class="field"><label>Resumo / Lide</label><textarea id="eSummary" placeholder="Primeira linha da notícia…"></textarea></div>
+      <div class="field"><label>Conteúdo completo</label><textarea id="eContent" style="height:120px" placeholder="Texto completo…"></textarea></div>
+      <div class="field">
+        <label>URL da imagem</label>
+        <input id="eImage" placeholder="https://…" oninput="previewImg('eImage','eImgPrev')">
+        <img id="eImgPrev" class="img-preview">
+      </div>
+      <div class="field-row">
+        <div class="field" style="margin:0">
+          <label>Categoria</label>
+          <select id="eCategory">
+            <option>Notícia</option><option>Política</option><option>Saúde</option>
+            <option>Segurança</option><option>Obras</option><option>Entretenimento</option>
+            <option>Economia</option><option>Educação</option><option>Esportes</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Cidade</label>
+          <input id="eCity" placeholder="Ex: Franco da Rocha">
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label>Seção</label>
+        <input id="eSection" placeholder="Ex: destaque, local…">
+      </div>
     </div>
-    <table>
-      <thead><tr>
-        <th style="width:52px">Img</th>
-        <th>Título</th>
-        <th>Categoria</th>
-        <th>Cidade</th>
-        <th>Data</th>
-        <th>Ações</th>
-      </tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-    <div id="emptyMsg" style="text-align:center;padding:40px;color:#9ca3af;display:none">Nenhuma matéria.</div>
-  </div>
-
-  <!-- BANNERS -->
-  <div class="section" id="sec-banner">
-    <div class="toolbar">
-      <span style="font-size:13px;color:#9ca3af">Gerencie os banners exibidos no portal</span>
-      <button class="btn btn-gold" onclick="openNewBanner()" style="margin-left:auto">+ Novo banner</button>
-      <button class="btn btn-gray" onclick="loadBanners()">↺</button>
-    </div>
-    <div class="banner-grid" id="bannerGrid"></div>
-    <div id="bannerEmpty" style="text-align:center;padding:40px;color:#9ca3af;display:none">Nenhum banner cadastrado.</div>
-  </div>
-
-</div><!-- /container -->
-</div><!-- /app -->
-
-<!-- Modal matéria -->
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <h2 id="modalTitle">Editar matéria</h2>
-    <input type="hidden" id="editId">
-    <div class="field"><label>Título</label><input id="eTitle"></div>
-    <div class="field"><label>Resumo / Lide</label><textarea id="eSummary"></textarea></div>
-    <div class="field"><label>Conteúdo completo</label><textarea id="eContent" style="height:110px"></textarea></div>
-    <div class="field"><label>URL da imagem</label><input id="eImage" placeholder="https://..."></div>
-    <div class="field"><label>Categoria</label>
-      <select id="eCategory">
-        <option>Notícia</option><option>Política</option><option>Saúde</option>
-        <option>Segurança</option><option>Obras</option><option>Entretenimento</option>
-        <option>Economia</option><option>Educação</option>
-      </select>
-    </div>
-    <div class="field"><label>Cidade</label><input id="eCity"></div>
-    <div class="field"><label>Seção</label><input id="eSection"></div>
-    <div class="modal-actions">
-      <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveArticle()">Salvar</button>
+    <div class="drawer-foot">
+      <button class="btn btn-ghost" onclick="closeDrawer()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveArticle()">Salvar matéria</button>
     </div>
   </div>
 </div>
 
-<!-- Modal banner -->
-<div class="modal-bg" id="bannerModal">
-  <div class="modal">
-    <h2 id="bannerModalTitle">Novo banner</h2>
-    <input type="hidden" id="bEditId">
-    <div class="field"><label>Título (opcional)</label><input id="bTitle" placeholder="Ex: Promoção Natal"></div>
-    <div class="field"><label>URL da imagem *</label><input id="bImage" placeholder="https://..."></div>
-    <div class="field"><label>Link ao clicar (opcional)</label><input id="bLink" placeholder="https://..."></div>
-    <div class="field"><label>Posição</label>
-      <select id="bPosition">
-        <option value="top">Topo</option>
-        <option value="middle">Meio</option>
-        <option value="bottom">Rodapé</option>
-      </select>
+<!-- DRAWER banner -->
+<div class="drawer-bg" id="bannerDrawerBg" onclick="closeBannerDrawer(event)">
+  <div class="drawer" id="bannerDrawer" onclick="event.stopPropagation()">
+    <div class="drawer-head">
+      <h2 id="bannerDrawerTitle">Novo banner</h2>
+      <button class="btn btn-ghost btn-icon" onclick="closeBannerDrawer()">✕</button>
     </div>
-    <div class="field"><label>Ordem (número)</label><input id="bOrder" type="number" value="0"></div>
-    <div class="field"><label>Status</label>
-      <select id="bActive">
-        <option value="true">Ativo</option>
-        <option value="false">Inativo</option>
-      </select>
+    <div class="drawer-body">
+      <input type="hidden" id="bEditId">
+      <div class="field"><label>Título (opcional)</label><input id="bTitle" placeholder="Nome interno para identificar"></div>
+      <div class="field">
+        <label>URL da imagem *</label>
+        <input id="bImage" placeholder="https://…" oninput="previewImg('bImage','bImgPrev')">
+        <img id="bImgPrev" class="img-preview">
+      </div>
+      <div class="field"><label>Link ao clicar (opcional)</label><input id="bLink" placeholder="https://…"></div>
+      <div class="field-row">
+        <div class="field" style="margin:0">
+          <label>Posição no portal</label>
+          <select id="bPosition">
+            <option value="top">Topo</option>
+            <option value="middle">Meio</option>
+            <option value="bottom">Rodapé</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Ordem</label>
+          <input id="bOrder" type="number" value="0" min="0">
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label>Status</label>
+        <select id="bActive">
+          <option value="true">Ativo — exibir no portal</option>
+          <option value="false">Inativo — ocultar</option>
+        </select>
+      </div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-gray" onclick="closeBannerModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveBanner()">Salvar</button>
+    <div class="drawer-foot">
+      <button class="btn btn-ghost" onclick="closeBannerDrawer()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveBanner()">Salvar banner</button>
     </div>
   </div>
 </div>
 
-<!-- Confirmar delete -->
-<div class="modal-bg" id="delModal">
-  <div class="modal" style="text-align:center;max-width:380px">
-    <div style="font-size:36px;margin-bottom:10px">🗑️</div>
-    <h2>Excluir?</h2>
-    <p style="color:#9ca3af;margin:8px 0 18px;font-size:13px">Esta ação não pode ser desfeita.</p>
-    <div class="modal-actions" style="justify-content:center">
-      <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-red" onclick="confirmDelete()">Excluir</button>
+<!-- CONFIRMAR DELETE -->
+<div class="confirm-wrap" id="confirmWrap">
+  <div class="confirm-box">
+    <div class="ico">🗑️</div>
+    <h3>Excluir permanentemente?</h3>
+    <p>Essa ação não pode ser desfeita.</p>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Excluir</button>
     </div>
   </div>
 </div>
@@ -212,105 +489,141 @@ tr:hover td{background:#1f1f1f}
 <div class="toast" id="toast"></div>
 
 <script>
-const SB_URL="https://yuqidbvfilomxkwaaerl.supabase.co";
-const SB_KEY="sb_publishable_t3Qiwi-26sBX-0mbtdjXCA__h26yp3p";
-const ADMIN_PWD="m20admin2026";
-const H={apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"};
+const SB="https://yuqidbvfilomxkwaaerl.supabase.co";
+const KEY="sb_publishable_t3Qiwi-26sBX-0mbtdjXCA__h26yp3p";
+const PWD="m20admin2026";
+const H={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
 
-let allArticles=[];
-let deleteId=null;
-let deleteTable=null;
+let articles=[], banners=[];
+let _delId=null, _delTable=null;
+let _curSection="materias";
 
+/* ══ AUTH ══ */
 function doLogin(){
   const v=document.getElementById("pwdInput").value;
-  if(v===ADMIN_PWD){
-    sessionStorage.setItem("m20admin","1");
-    document.getElementById("loginWrap").style.display="none";
-    document.getElementById("app").style.display="block";
+  if(v===PWD){
+    sessionStorage.setItem("m20x","1");
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("adminApp").style.display="block";
     loadArticles();
   } else {
     document.getElementById("loginErr").textContent="Senha incorreta.";
   }
 }
-function logout(){sessionStorage.removeItem("m20admin");location.reload();}
+function logout(){sessionStorage.removeItem("m20x");location.reload();}
 
 window.onload=function(){
-  if(sessionStorage.getItem("m20admin")==="1"){
-    document.getElementById("loginWrap").style.display="none";
-    document.getElementById("app").style.display="block";
+  if(sessionStorage.getItem("m20x")==="1"){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("adminApp").style.display="block";
     loadArticles();
   }
 };
 
-function showSection(name){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-  document.getElementById("sec-"+name).classList.add("active");
-  event.currentTarget.classList.add("active");
-  if(name==="banner") loadBanners();
+/* ══ SECTION ══ */
+function goSection(name){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("on"));
+  document.querySelectorAll(".sb-item").forEach(b=>b.classList.remove("on"));
+  document.getElementById("sec-"+name).classList.add("on");
+  document.getElementById("nav-"+name).classList.add("on");
+  _curSection=name;
+  if(name==="materias"){
+    document.getElementById("topbarTitle").textContent="Matérias";
+    document.getElementById("btnNew").textContent="+ Nova matéria";
+    document.getElementById("btnNew").onclick=openNew;
+    loadArticles();
+  } else {
+    document.getElementById("topbarTitle").textContent="Banners";
+    document.getElementById("btnNew").textContent="+ Novo banner";
+    document.getElementById("btnNew").onclick=openNewBanner;
+    loadBanners();
+  }
 }
+function refresh(){if(_curSection==="materias")loadArticles(); else loadBanners();}
 
-/* ── MATÉRIAS ── */
+/* ══ ARTIGOS ══ */
 async function loadArticles(){
+  document.getElementById("topbarSub").textContent="carregando…";
   try{
-    const r=await fetch(SB_URL+"/rest/v1/articles?select=id,title,summary,content,image_url,category,city,section,published_at,source_url&order=published_at.desc&limit=200",{headers:H});
-    allArticles=await r.json();
-    if(!Array.isArray(allArticles)){allArticles=[];showToast("Erro ao carregar matérias",true);return;}
-    renderStats();renderTable(allArticles);populateCatFilter();
-  }catch(e){showToast("Erro: "+e.message,true);}
+    const r=await fetch(SB+"/rest/v1/articles?select=id,title,summary,content,image_url,category,city,section,published_at&order=published_at.desc&limit=300",{headers:H});
+    articles=await r.json();
+    if(!Array.isArray(articles)){articles=[];toast("Erro ao carregar matérias",1);return;}
+    renderStats();buildFilters();filterArticles();
+    document.getElementById("topbarSub").textContent=articles.length+" matérias";
+  }catch(e){toast("Erro: "+e.message,1);}
 }
 
 function renderStats(){
-  document.getElementById("stTotal").textContent=allArticles.length;
   const today=new Date().toISOString().slice(0,10);
-  document.getElementById("stHoje").textContent=allArticles.filter(a=>a.published_at&&a.published_at.startsWith(today)).length;
-  document.getElementById("stCat").textContent=new Set(allArticles.map(a=>a.category).filter(Boolean)).size;
+  const week=new Date(Date.now()-7*864e5).toISOString();
+  document.getElementById("stTotal").textContent=articles.length;
+  document.getElementById("stHoje").textContent=articles.filter(a=>a.published_at?.startsWith(today)).length;
+  document.getElementById("stSemana").textContent=articles.filter(a=>a.published_at>week).length;
+  document.getElementById("stCat").textContent=new Set(articles.map(a=>a.category).filter(Boolean)).size;
+  document.getElementById("stDelta").textContent="atualizado agora";
 }
 
-function populateCatFilter(){
-  const sel=document.getElementById("filterCat");
-  const cats=[...new Set(allArticles.map(a=>a.category).filter(Boolean))].sort();
-  sel.innerHTML='<option value="">Todas as categorias</option>';
-  cats.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);});
+function buildFilters(){
+  const cats=[...new Set(articles.map(a=>a.category).filter(Boolean))].sort();
+  const secs=[...new Set(articles.map(a=>a.section).filter(Boolean))].sort();
+  const fCat=document.getElementById("filterCat");
+  const fSec=document.getElementById("filterSection");
+  const cv=fCat.value,sv=fSec.value;
+  fCat.innerHTML='<option value="">Todas as categorias</option>'+cats.map(c=>`<option>${c}</option>`).join("");
+  fSec.innerHTML='<option value="">Todas as seções</option>'+secs.map(s=>`<option>${s}</option>`).join("");
+  fCat.value=cv;fSec.value=sv;
 }
 
-function filterTable(){
-  const q=document.getElementById("search").value.toLowerCase();
+function filterArticles(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
   const cat=document.getElementById("filterCat").value;
-  renderTable(allArticles.filter(a=>(!q||a.title?.toLowerCase().includes(q)||a.city?.toLowerCase().includes(q))&&(!cat||a.category===cat)));
+  const sec=document.getElementById("filterSection").value;
+  const list=articles.filter(a=>
+    (!q||(a.title||"").toLowerCase().includes(q)||(a.city||"").toLowerCase().includes(q))&&
+    (!cat||a.category===cat)&&(!sec||a.section===sec)
+  );
+  renderTable(list);
 }
 
-function renderTable(articles){
-  const tbody=document.getElementById("tbody");
-  document.getElementById("emptyMsg").style.display=articles.length?"none":"block";
-  if(!articles.length){tbody.innerHTML="";return;}
-  tbody.innerHTML=articles.map(a=>`
-    <tr>
-      <td>${a.image_url?`<img class="img-thumb" src="${a.image_url}" onerror="this.style.display='none'">`:`<div class="img-thumb" style="background:#2d2d2d;display:flex;align-items:center;justify-content:center;font-size:18px">📰</div>`}</td>
-      <td class="title-cell"><strong>${a.title||'—'}</strong><small>${(a.summary||'').slice(0,70)}</small></td>
-      <td><span class="badge">${a.category||'—'}</span></td>
-      <td style="color:#9ca3af;white-space:nowrap">${a.city||'—'}</td>
-      <td style="color:#6b7280;white-space:nowrap;font-size:11px">${a.published_at?new Date(a.published_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</td>
-      <td class="actions">
-        <button class="btn btn-gray" style="padding:4px 9px" onclick="editArticle('${a.id}')">✏️</button>
-        <button class="btn btn-red" style="padding:4px 9px" onclick="askDelete('${a.id}','articles')">🗑️</button>
-      </td>
-    </tr>
+function renderTable(list){
+  const grid=document.getElementById("artGrid");
+  document.getElementById("emptyMsg").style.display=list.length?"none":"block";
+  if(!list.length){grid.innerHTML="";return;}
+  grid.innerHTML=list.map(a=>`
+    <div class="art-card">
+      <div class="art-card-img-wrap">
+        ${a.image_url
+          ?`<img class="art-card-img" src="${esc(a.image_url)}" loading="lazy" onerror="this.style.display='none'">`
+          :`<div class="art-card-img" style="display:flex;align-items:center;justify-content:center;font-size:36px">📰</div>`}
+        <span class="cat-badge">${esc(a.category||"Sem categoria")}</span>
+      </div>
+      <div class="art-card-body">
+        <div class="art-card-title">${esc(a.title||"Sem título")}</div>
+        <div class="art-card-meta">
+          <span>📍 ${esc(a.city||"—")}</span>
+          <span>🕐 ${fmtDate(a.published_at)}</span>
+        </div>
+        <div class="art-card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editArticle('${a.id}')">✏️ Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="askDel('${a.id}','articles')">🗑️ Excluir</button>
+        </div>
+      </div>
+    </div>
   `).join("");
 }
 
 function openNew(){
-  document.getElementById("modalTitle").textContent="Nova matéria";
+  document.getElementById("drawerTitle").textContent="Nova matéria";
   document.getElementById("editId").value="";
   ["eTitle","eSummary","eContent","eImage","eCity","eSection"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("eCategory").value="Notícia";
-  document.getElementById("modal").classList.add("open");
+  document.getElementById("eImgPrev").classList.remove("show");
+  document.getElementById("drawerBg").classList.add("open");
 }
 
 function editArticle(id){
-  const a=allArticles.find(x=>x.id==id);
-  if(!a)return;
-  document.getElementById("modalTitle").textContent="Editar matéria";
+  const a=articles.find(x=>x.id==id);if(!a)return;
+  document.getElementById("drawerTitle").textContent="Editar matéria";
   document.getElementById("editId").value=a.id;
   document.getElementById("eTitle").value=a.title||"";
   document.getElementById("eSummary").value=a.summary||"";
@@ -319,7 +632,8 @@ function editArticle(id){
   document.getElementById("eCategory").value=a.category||"Notícia";
   document.getElementById("eCity").value=a.city||"";
   document.getElementById("eSection").value=a.section||"";
-  document.getElementById("modal").classList.add("open");
+  previewImg("eImage","eImgPrev");
+  document.getElementById("drawerBg").classList.add("open");
 }
 
 async function saveArticle(){
@@ -328,60 +642,60 @@ async function saveArticle(){
     title:document.getElementById("eTitle").value,
     summary:document.getElementById("eSummary").value,
     content:document.getElementById("eContent").value,
-    image_url:document.getElementById("eImage").value,
+    image_url:document.getElementById("eImage").value||null,
     category:document.getElementById("eCategory").value,
     city:document.getElementById("eCity").value,
-    section:document.getElementById("eSection").value,
+    section:document.getElementById("eSection").value||null,
   };
+  if(!payload.title.trim()){toast("Informe o título",1);return;}
+  if(!id) payload.published_at=new Date().toISOString();
   try{
-    let url,method;
-    if(id){
-      url=SB_URL+"/rest/v1/articles?id=eq."+encodeURIComponent(id);
-      method="PATCH";
-    } else {
-      url=SB_URL+"/rest/v1/articles";
-      method="POST";
-      payload.published_at=new Date().toISOString();
-    }
-    const r=await fetch(url,{method,headers:{...H,Prefer:"return=minimal"},body:JSON.stringify(payload)});
+    const url=SB+"/rest/v1/articles"+(id?"?id=eq."+encodeURIComponent(id):"");
+    const r=await fetch(url,{method:id?"PATCH":"POST",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify(payload)});
     if(r.ok||r.status===204||r.status===201){
-      showToast(id?"✅ Atualizada!":"✅ Criada!");closeModal();loadArticles();
+      toast(id?"Matéria atualizada ✓":"Matéria criada ✓");closeDrawer();loadArticles();
     } else {
-      const err=await r.text();
-      showToast("Erro "+r.status+": "+err.slice(0,80),true);
+      const e=await r.text();
+      let msg=e;try{msg=JSON.parse(e).message||e;}catch{}
+      toast("Erro "+r.status+": "+msg.slice(0,80),1);
     }
-  }catch(e){showToast("Erro: "+e.message,true);}
+  }catch(e){toast("Erro: "+e.message,1);}
 }
 
-/* ── BANNERS ── */
-let allBanners=[];
+function closeDrawer(e){
+  if(e&&e.target!==document.getElementById("drawerBg"))return;
+  document.getElementById("drawerBg").classList.remove("open");
+}
 
+/* ══ BANNERS ══ */
 async function loadBanners(){
+  document.getElementById("topbarSub").textContent="carregando…";
   try{
-    const r=await fetch(SB_URL+"/rest/v1/banners?select=*&order=sort_order.asc",{headers:H});
-    allBanners=await r.json();
-    if(!Array.isArray(allBanners)){allBanners=[];}
+    const r=await fetch(SB+"/rest/v1/banners?select=*&order=sort_order.asc",{headers:H});
+    banners=await r.json();
+    if(!Array.isArray(banners)){banners=[];}
     renderBanners();
-  }catch(e){showToast("Erro banners: "+e.message,true);}
+    document.getElementById("topbarSub").textContent=banners.length+" banners";
+  }catch(e){toast("Erro banners: "+e.message,1);}
 }
 
 function renderBanners(){
   const grid=document.getElementById("bannerGrid");
-  document.getElementById("bannerEmpty").style.display=allBanners.length?"none":"block";
-  grid.innerHTML=allBanners.map(b=>`
-    <div class="banner-card">
-      <img src="${b.image_url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22120%22><rect fill=%22%232d2d2d%22 width=%22100%25%22 height=%22100%25%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%236b7280%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2228%22>🖼️</text></svg>'">
-      <div class="bc-body">
-        <div class="bc-title">${b.title||"Banner"}</div>
-        <div class="bc-meta">
-          <span>${b.position==="top"?"Topo":b.position==="middle"?"Meio":"Rodapé"}</span> ·
-          <span class="${b.active?"pill-on":"pill-off"}">${b.active?"Ativo":"Inativo"}</span>
-          ${b.link_url?` · <a href="${b.link_url}" target="_blank" style="color:#93c5fd;font-size:10px">link ↗</a>`:""}
+  document.getElementById("bannerEmpty").style.display=banners.length?"none":"block";
+  grid.innerHTML=banners.map(b=>`
+    <div class="bcard">
+      <img class="bcard-img" src="${esc(b.image_url)}" loading="lazy" onerror="this.style.display='none'">
+      <div class="bcard-body">
+        <div class="bcard-title">${esc(b.title||"Banner")}</div>
+        <div class="bcard-meta">
+          <span class="chip chip-cat">${posTxt(b.position)}</span>
+          <span class="chip ${b.active?"chip-on":"chip-off"}">${b.active?"Ativo":"Inativo"}</span>
+          ${b.link_url?`<span class="chip chip-red">link</span>`:""}
         </div>
-        <div class="bc-actions">
-          <button class="btn btn-gray" style="padding:4px 10px;font-size:11px" onclick="editBanner('${b.id}')">✏️ Editar</button>
-          <button class="btn btn-${b.active?"gray":"green"}" style="padding:4px 10px;font-size:11px" onclick="toggleBanner('${b.id}',${!b.active})">${b.active?"Desativar":"Ativar"}</button>
-          <button class="btn btn-red" style="padding:4px 9px" onclick="askDelete('${b.id}','banners')">🗑️</button>
+        <div class="bcard-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editBanner('${b.id}')">✏️ Editar</button>
+          <button class="btn btn-sm ${b.active?"btn-ghost":"btn-success"}" onclick="toggleBanner('${b.id}',${!b.active})">${b.active?"Desativar":"Ativar"}</button>
+          <button class="btn btn-icon btn-sm btn-danger" onclick="askDel('${b.id}','banners')">🗑️</button>
         </div>
       </div>
     </div>
@@ -389,35 +703,36 @@ function renderBanners(){
 }
 
 function openNewBanner(){
-  document.getElementById("bannerModalTitle").textContent="Novo banner";
+  document.getElementById("bannerDrawerTitle").textContent="Novo banner";
   document.getElementById("bEditId").value="";
   ["bTitle","bImage","bLink"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("bPosition").value="top";
   document.getElementById("bOrder").value="0";
   document.getElementById("bActive").value="true";
-  document.getElementById("bannerModal").classList.add("open");
+  document.getElementById("bImgPrev").classList.remove("show");
+  document.getElementById("bannerDrawerBg").classList.add("open");
 }
 
 function editBanner(id){
-  const b=allBanners.find(x=>x.id==id);
-  if(!b)return;
-  document.getElementById("bannerModalTitle").textContent="Editar banner";
+  const b=banners.find(x=>x.id==id);if(!b)return;
+  document.getElementById("bannerDrawerTitle").textContent="Editar banner";
   document.getElementById("bEditId").value=b.id;
   document.getElementById("bTitle").value=b.title||"";
   document.getElementById("bImage").value=b.image_url||"";
   document.getElementById("bLink").value=b.link_url||"";
   document.getElementById("bPosition").value=b.position||"top";
-  document.getElementById("bOrder").value=b.sort_order||0;
+  document.getElementById("bOrder").value=b.sort_order??0;
   document.getElementById("bActive").value=String(b.active!==false);
-  document.getElementById("bannerModal").classList.add("open");
+  previewImg("bImage","bImgPrev");
+  document.getElementById("bannerDrawerBg").classList.add("open");
 }
 
 async function saveBanner(){
   const id=document.getElementById("bEditId").value.trim();
   const img=document.getElementById("bImage").value.trim();
-  if(!img){showToast("URL da imagem é obrigatória",true);return;}
+  if(!img){toast("URL da imagem é obrigatória",1);return;}
   const payload={
-    title:document.getElementById("bTitle").value,
+    title:document.getElementById("bTitle").value||null,
     image_url:img,
     link_url:document.getElementById("bLink").value||null,
     position:document.getElementById("bPosition").value,
@@ -425,54 +740,60 @@ async function saveBanner(){
     active:document.getElementById("bActive").value==="true",
   };
   try{
-    const url=SB_URL+"/rest/v1/banners"+(id?"?id=eq."+encodeURIComponent(id):"");
+    const url=SB+"/rest/v1/banners"+(id?"?id=eq."+encodeURIComponent(id):"");
     const r=await fetch(url,{method:id?"PATCH":"POST",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify(payload)});
     if(r.ok||r.status===204||r.status===201){
-      showToast(id?"✅ Banner atualizado!":"✅ Banner criado!");closeBannerModal();loadBanners();
-    } else {
-      const err=await r.text();showToast("Erro "+r.status+": "+err.slice(0,80),true);
-    }
-  }catch(e){showToast("Erro: "+e.message,true);}
+      toast(id?"Banner atualizado ✓":"Banner criado ✓");closeBannerDrawer();loadBanners();
+    } else toast("Erro "+r.status,1);
+  }catch(e){toast("Erro: "+e.message,1);}
 }
 
 async function toggleBanner(id,active){
   try{
-    await fetch(SB_URL+"/rest/v1/banners?id=eq."+encodeURIComponent(id),
+    await fetch(SB+"/rest/v1/banners?id=eq."+encodeURIComponent(id),
       {method:"PATCH",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify({active})});
-    loadBanners();
-  }catch(e){showToast("Erro: "+e.message,true);}
+    toast(active?"Banner ativado ✓":"Banner desativado");loadBanners();
+  }catch(e){toast("Erro: "+e.message,1);}
 }
 
-/* ── DELETE ── */
-function askDelete(id,table){
-  deleteId=id;deleteTable=table;
-  document.getElementById("delModal").classList.add("open");
+function closeBannerDrawer(e){
+  if(e&&e.target!==document.getElementById("bannerDrawerBg"))return;
+  document.getElementById("bannerDrawerBg").classList.remove("open");
 }
 
+/* ══ DELETE ══ */
+function askDel(id,table){_delId=id;_delTable=table;document.getElementById("confirmWrap").classList.add("open");}
+function closeConfirm(){_delId=null;_delTable=null;document.getElementById("confirmWrap").classList.remove("open");}
 async function confirmDelete(){
-  if(!deleteId)return;
+  if(!_delId)return;
   try{
-    const r=await fetch(SB_URL+"/rest/v1/"+deleteTable+"?id=eq."+encodeURIComponent(deleteId),
-      {method:"DELETE",headers:H});
+    const r=await fetch(SB+"/rest/v1/"+_delTable+"?id=eq."+encodeURIComponent(_delId),{method:"DELETE",headers:H});
     if(r.ok||r.status===204){
-      showToast("🗑️ Excluído!");closeModal();
-      if(deleteTable==="articles")loadArticles(); else loadBanners();
-    } else showToast("Erro ao excluir",true);
-  }catch(e){showToast("Erro: "+e.message,true);}
-  deleteId=null;deleteTable=null;
+      toast("Excluído ✓");closeConfirm();
+      if(_delTable==="articles")loadArticles(); else loadBanners();
+    } else toast("Erro ao excluir",1);
+  }catch(e){toast("Erro: "+e.message,1);}
 }
 
-function closeModal(){
-  ["modal","delModal"].forEach(id=>document.getElementById(id).classList.remove("open"));
+/* ══ UTILS ══ */
+function previewImg(inp,prev){
+  const val=document.getElementById(inp).value.trim();
+  const el=document.getElementById(prev);
+  if(val){el.src=val;el.classList.add("show");}else el.classList.remove("show");
 }
-function closeBannerModal(){
-  document.getElementById("bannerModal").classList.remove("open");
+function fmtDate(d){
+  if(!d)return"—";
+  return new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
 }
-
-function showToast(msg,err=false){
+function posTxt(p){return{top:"Topo",middle:"Meio",bottom:"Rodapé"}[p]||p||"—";}
+function esc(s){
+  if(!s)return"";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function toast(msg,err=0){
   const t=document.getElementById("toast");
   t.textContent=msg;t.className="toast"+(err?" err":"");
-  t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000);
+  t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3200);
 }
 </script>
 </body>

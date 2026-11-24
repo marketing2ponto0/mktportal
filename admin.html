@@ -324,11 +324,25 @@ select:focus{outline:none;border-color:var(--red)}
 /* ══ DESTAQUES ══ */
 .brand-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
 .brand-admin-card{background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
-.brand-admin-logo{width:72px;height:72px;border-radius:50%;object-fit:contain;background:#f0f0f0;border:2px solid #e2e2e2}
-.brand-admin-logo.placeholder{display:flex;align-items:center;justify-content:center;font-size:24px}
+.brand-admin-logo-wrap{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#f0f0f0;border:2px solid #e2e2e2;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-admin-logo{width:100%;height:100%;object-fit:cover;display:block}
+.brand-admin-logo.placeholder{font-size:24px}
 .brand-admin-name{font-weight:700;font-size:13px;color:#111}
 .brand-admin-actions{display:flex;gap:6px;width:100%}
 .brand-admin-actions .btn{flex:1;font-size:11px;padding:5px 4px}
+/* zoom preview */
+.zoom-preview-wrap{width:80px;height:80px;border-radius:50%;overflow:hidden;background:#f0f0f0;border:2px solid #e2e2e2;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.zoom-preview-wrap img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center}
+/* galeria picker */
+.gallery-picker-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center}
+.gallery-picker-modal.open{display:flex}
+.gallery-picker-box{background:#fff;border-radius:16px;padding:20px;width:min(96vw,560px);max-height:80vh;display:flex;flex-direction:column;gap:12px}
+.gallery-picker-box h3{font-size:16px;font-weight:700;margin:0}
+.gallery-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;overflow-y:auto;flex:1}
+.gallery-picker-item{cursor:pointer;border-radius:8px;overflow:hidden;aspect-ratio:1;border:2px solid transparent;transition:.15s}
+.gallery-picker-item:hover{border-color:var(--red)}
+.gallery-picker-item img{width:100%;height:100%;object-fit:cover}
+.gallery-picker-actions{display:flex;gap:8px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -546,6 +560,11 @@ select:focus{outline:none;border-color:var(--red)}
         <label>URL da imagem *</label>
         <input id="bImage" placeholder="https://…" oninput="previewImg('bImage','bImgPrev')">
         <img id="bImgPrev" class="img-preview">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="file" id="bImageFI" accept="image/*" style="display:none" onchange="uploadBannerImg(this.files)">
+          <button class="btn btn-ghost" style="font-size:12px" onclick="document.getElementById('bImageFI').click()">📤 Enviar imagem</button>
+          <button class="btn btn-ghost" style="font-size:12px" onclick="openGalleryPicker('bImage','bImgPrev')">🖼️ Da galeria</button>
+        </div>
       </div>
       <div class="field"><label>Link ao clicar (opcional)</label><input id="bLink" placeholder="https://…"></div>
       <div class="field-row">
@@ -604,6 +623,17 @@ select:focus{outline:none;border-color:var(--red)}
         <input id="bdSort" type="number" value="0" min="0" style="width:80px">
       </div>
       <div class="field">
+        <label>Zoom do logo no círculo</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="bdZoom" min="60" max="160" value="100" style="flex:1" oninput="updateZoomPreview()">
+          <span id="bdZoomVal" style="font-size:13px;font-weight:700;min-width:38px">100%</span>
+        </div>
+        <div class="zoom-preview-wrap" style="margin-top:8px">
+          <img id="bdZoomPreview" src="" style="display:none">
+          <span id="bdZoomPlaceholder" style="font-size:11px;color:#aaa;text-align:center">prévia</span>
+        </div>
+      </div>
+      <div class="field">
         <label>Status</label>
         <select id="bdActive">
           <option value="true">Ativo — aparece nos destaques</option>
@@ -631,6 +661,24 @@ select:focus{outline:none;border-color:var(--red)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- GALLERY PICKER MODAL -->
+<div class="gallery-picker-modal" id="galleryPickerModal">
+  <div class="gallery-picker-box">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Escolher da galeria</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeGalleryPicker()">✕</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="file" id="gpUploadFI" accept="image/*" multiple style="display:none" onchange="gpUpload(this.files)">
+      <button class="btn btn-primary" style="font-size:13px" onclick="document.getElementById('gpUploadFI').click()">📤 Enviar nova imagem</button>
+    </div>
+    <div class="gallery-picker-grid" id="galleryPickerGrid"></div>
+    <div class="gallery-picker-actions">
+      <button class="btn btn-ghost" onclick="closeGalleryPicker()">Fechar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SB="https://yuqidbvfilomxkwaaerl.supabase.co";
@@ -1032,9 +1080,10 @@ function renderBrands(){
   const grid=document.getElementById("brandAdminGrid");
   document.getElementById("brandEmpty").style.display=brandsData.length?"none":"block";
   grid.innerHTML=brandsData.map(b=>{
+    const zoom=b.logo_zoom||100;
     const logoHtml=b.logo_url
-      ?'<img class="brand-admin-logo" src="'+esc(b.logo_url)+'" onerror="this.style.display=\'none\'">'
-      :'<div class="brand-admin-logo placeholder">🏷️</div>';
+      ?`<div class="brand-admin-logo-wrap"><img class="brand-admin-logo" src="${esc(b.logo_url)}" style="transform:scale(${zoom/100})" onerror="this.parentElement.innerHTML='🏷️'"></div>`
+      :'<div class="brand-admin-logo-wrap"><span class="brand-admin-logo placeholder">🏷️</span></div>';
     const statusDot=b.active?'<span style="color:#22c55e">●</span>':'<span style="color:#ccc">●</span>';
     return`<div class="brand-admin-card">
       ${logoHtml}
@@ -1054,9 +1103,12 @@ function openNewBrand(){
   document.getElementById("bdLogoPrev").classList.remove("show");
   document.getElementById("bdInsta").value="";
   document.getElementById("bdSort").value="0";
+  document.getElementById("bdZoom").value="100";
+  document.getElementById("bdZoomVal").textContent="100%";
   document.getElementById("bdActive").value="true";
   document.getElementById("bdDrawerTitle").textContent="Nova marca";
   document.getElementById("bdDrawerBg").style.display="flex";
+  updateZoomPreview();
 }
 
 function editBrand(id){
@@ -1068,9 +1120,13 @@ function editBrand(id){
   else document.getElementById("bdLogoPrev").classList.remove("show");
   document.getElementById("bdInsta").value=b.instagram_url||"";
   document.getElementById("bdSort").value=b.sort||0;
+  const zoom=b.logo_zoom||100;
+  document.getElementById("bdZoom").value=zoom;
+  document.getElementById("bdZoomVal").textContent=zoom+"%";
   document.getElementById("bdActive").value=String(b.active!==false);
   document.getElementById("bdDrawerTitle").textContent="Editar marca";
   document.getElementById("bdDrawerBg").style.display="flex";
+  updateZoomPreview();
 }
 
 function closeBrandDrawer(e){
@@ -1085,6 +1141,7 @@ async function saveBrand(){
     logo_url:document.getElementById("bdLogo").value.trim()||null,
     instagram_url:document.getElementById("bdInsta").value.trim()||null,
     sort:parseInt(document.getElementById("bdSort").value)||0,
+    logo_zoom:parseInt(document.getElementById("bdZoom").value)||100,
     active:document.getElementById("bdActive").value==="true"
   };
   if(!payload.name){toast("Nome obrigatório",1);return;}
@@ -1152,6 +1209,91 @@ function toast(msg,err=0){
   const t=document.getElementById("toast");
   t.textContent=msg;t.className="toast"+(err?" err":"");
   t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3200);
+}
+
+/* ══ ZOOM PREVIEW ══ */
+function updateZoomPreview(){
+  const v=document.getElementById("bdZoom").value;
+  document.getElementById("bdZoomVal").textContent=v+"%";
+  const img=document.getElementById("bdZoomPreview");
+  const ph=document.getElementById("bdZoomPlaceholder");
+  const logoUrl=document.getElementById("bdLogo").value.trim();
+  if(logoUrl&&!/canva/i.test(logoUrl)){
+    img.src=logoUrl;img.style.display="block";img.style.transform="scale("+v/100+")";
+    ph.style.display="none";
+  } else {
+    img.style.display="none";ph.style.display="block";
+  }
+}
+// also update preview when logo URL changes
+document.addEventListener("DOMContentLoaded",()=>{
+  const bdLogoInput=document.getElementById("bdLogo");
+  if(bdLogoInput)bdLogoInput.addEventListener("input",updateZoomPreview);
+});
+
+/* ══ UPLOAD BANNER IMAGE ══ */
+async function uploadBannerImg(files){
+  if(!files||!files.length)return;
+  const file=files[0];
+  const name="banner_"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  toast("Enviando…");
+  const r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+encodeURIComponent(name),{
+    method:"POST",
+    headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":file.type,"x-upsert":"true"},
+    body:file
+  });
+  document.getElementById("bImageFI").value="";
+  if(r.ok){
+    const url=SB+"/storage/v1/object/public/"+BUCKET+"/"+encodeURIComponent(name);
+    document.getElementById("bImage").value=url;
+    previewImg("bImage","bImgPrev");
+    toast("Imagem enviada ✓");
+  }else{toast("Erro ao enviar imagem",1);}
+}
+
+/* ══ GALLERY PICKER ══ */
+let _gpTarget=null,_gpPrev=null;
+async function openGalleryPicker(targetId,prevId){
+  _gpTarget=targetId;_gpPrev=prevId;
+  document.getElementById("galleryPickerModal").classList.add("open");
+  const grid=document.getElementById("galleryPickerGrid");
+  grid.innerHTML="<span style='color:#aaa;font-size:13px'>Carregando…</span>";
+  try{
+    const r=await fetch(SB+"/storage/v1/object/list/"+BUCKET,{
+      method:"POST",headers:{...H},
+      body:JSON.stringify({limit:200,offset:0,sortBy:{column:"created_at",order:"desc"}})
+    });
+    const items=await r.json();
+    if(!Array.isArray(items)||items.length===0){grid.innerHTML="<span style='color:#aaa;font-size:13px'>Galeria vazia. Envie uma imagem acima.</span>";return;}
+    grid.innerHTML=items.map(f=>{
+      const url=SB+"/storage/v1/object/public/"+BUCKET+"/"+encodeURIComponent(f.name);
+      return`<div class="gallery-picker-item" onclick="pickGalleryItem('${url}')"><img src="${esc(url)}" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`;
+    }).join("");
+  }catch(e){grid.innerHTML="<span style='color:red;font-size:13px'>Erro: "+esc(e.message)+"</span>";}
+}
+function pickGalleryItem(url){
+  if(_gpTarget)document.getElementById(_gpTarget).value=url;
+  if(_gpPrev)previewImg(_gpTarget,_gpPrev);
+  closeGalleryPicker();
+}
+function closeGalleryPicker(){
+  document.getElementById("galleryPickerModal").classList.remove("open");
+}
+async function gpUpload(files){
+  if(!files||!files.length)return;
+  let ok=0;
+  for(const file of files){
+    const name="gallery_"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+encodeURIComponent(name),{
+      method:"POST",
+      headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":file.type,"x-upsert":"true"},
+      body:file
+    });
+    if(r.ok)ok++;
+  }
+  document.getElementById("gpUploadFI").value="";
+  if(ok>0){toast("✓ "+ok+" imagem(ns) enviada(s)");openGalleryPicker(_gpTarget,_gpPrev);}
+  else toast("Erro ao enviar",1);
 }
 </script>
 </body>

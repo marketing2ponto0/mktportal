@@ -154,7 +154,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-block:24px 32px;
 .brand-logo{width:62px;height:62px;border-radius:50%;padding:2px;background:var(--bg);
   border:2px solid color-mix(in srgb,var(--fg) 20%,var(--surface));display:grid;place-items:center;transition:transform .15s,border-color .15s}
 .brand-item:hover .brand-logo{transform:translateY(-2px);border-color:var(--accent)}
-.brand-logo img{width:100%;height:100%;border-radius:50%;object-fit:contain;display:block;background:#fff;padding:4px}
+.brand-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#fff;transform-origin:center}
 .brand-logo .ini{width:100%;height:100%;border-radius:50%;background:#fff;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:21px;color:var(--accent)}
 .brand-name{font-size:10px;font-weight:600;line-height:1.2;text-align:center;max-width:74px}
 .adwrap{padding-top:16px}
@@ -436,17 +436,19 @@ function normBrand(n){return (n||"").toLowerCase().normalize("NFD").replace(/[̀
 const BRANDFALLBACK={};DEFAULT_BRANDS.forEach(b=>BRANDFALLBACK[normBrand(b.name)]=b);
 function iniciais(n){return (n||"").replace(/^Guia\s+/i,"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();}
 function brandItem(b){
-  const inner=b.logo_url?'<img loading="lazy" referrerpolicy="no-referrer" src="'+esc(b.logo_url)+'" alt="'+esc(b.name)+'" onerror="this.parentNode.innerHTML=\'<span class=ini>'+esc(iniciais(b.name))+'</span>\'">':'<span class="ini">'+esc(iniciais(b.name))+'</span>';
+  const zoom=b.logo_zoom||100;
+  const imgStyle=zoom!==100?'style="transform:scale('+zoom/100+')"':'';
+  const inner=b.logo_url?'<img loading="lazy" referrerpolicy="no-referrer" src="'+esc(b.logo_url)+'" '+imgStyle+' alt="'+esc(b.name)+'" onerror="this.parentNode.innerHTML=\'<span class=ini>'+esc(iniciais(b.name))+'</span>\'">':'<span class="ini">'+esc(iniciais(b.name))+'</span>';
   const body='<span class="brand-logo">'+inner+'</span><span class="brand-name">'+esc(b.name)+'</span>';
   return b.instagram_url?'<a class="brand-item" href="'+esc(b.instagram_url)+'" target="_blank" rel="noopener">'+body+'</a>':'<span class="brand-item">'+body+'</span>';
 }
 async function loadBrands(){
   const el=document.getElementById("brands");if(!el)return;
   let list=[];
-  try{list=await sb("brands?select=name,logo_url,instagram_url&active=eq.true&order=sort.asc,name.asc");}catch(e){}
+  try{list=await sb("brands?select=name,logo_url,instagram_url,logo_zoom&active=eq.true&order=sort.asc,name.asc");}catch(e){}
   list=(list||[]).filter(b=>b&&b.name);
   if(!list.length)list=DEFAULT_BRANDS.slice();
-  else list=list.map(b=>{const f=BRANDFALLBACK[normBrand(b.name)]||{};return {name:b.name,logo_url:b.logo_url||f.logo_url||null,instagram_url:b.instagram_url||f.instagram_url||null};});
+  else list=list.map(b=>{const f=BRANDFALLBACK[normBrand(b.name)]||{};return {name:b.name,logo_url:b.logo_url||f.logo_url||null,instagram_url:b.instagram_url||f.instagram_url||null,logo_zoom:b.logo_zoom||100};});
   el.innerHTML=list.map(brandItem).join("");
   startBrandAuto(el);
 }

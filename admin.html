@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin — MKT Portal</title>
+<link rel="manifest" href="/admin-manifest.json">
+<meta name="theme-color" content="#cc1a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MKT Admin">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -262,6 +268,43 @@ select:focus{outline:none;border-color:var(--red)}
 .login-box input:focus{outline:none;border-color:var(--red);background:#fff}
 .login-err{color:var(--red);font-size:11px;min-height:16px;margin-bottom:6px}
 
+/* ── GALERIA ── */
+.gallery-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.upload-zone{
+  border:2px dashed #ddd;border-radius:var(--r);
+  padding:28px;text-align:center;cursor:pointer;
+  transition:border-color .15s,background .15s;background:#fff
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--red);background:#fdf5f5}
+.upload-zone input{display:none}
+.upload-zone .ico{font-size:32px;margin-bottom:8px}
+.upload-zone p{font-size:13px;color:#888;margin-bottom:4px}
+.upload-zone small{font-size:11px;color:#bbb}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:16px}
+.gal-item{
+  position:relative;border-radius:var(--r);overflow:hidden;
+  background:#eee;aspect-ratio:16/10;cursor:pointer;
+  border:2px solid transparent;transition:border-color .15s
+}
+.gal-item:hover{border-color:var(--red)}
+.gal-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gal-item .gal-actions{
+  position:absolute;inset:0;background:#0009;
+  display:none;align-items:center;justify-content:center;gap:8px
+}
+.gal-item:hover .gal-actions{display:flex}
+.gal-name{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,#000a);
+  padding:16px 6px 5px;font-size:9px;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.upload-progress{
+  height:4px;border-radius:2px;background:#eee;
+  overflow:hidden;margin-top:8px;display:none
+}
+.upload-progress .bar{height:100%;background:var(--red);width:0;transition:width .3s}
+
 /* ── SECTIONS ── */
 .section{display:none}.section.on{display:block}
 
@@ -304,6 +347,9 @@ select:focus{outline:none;border-color:var(--red)}
     </div>
     <div class="sb-item" id="nav-banners" onclick="goSection('banners')">
       🖼️<span class="tip">Banners</span>
+    </div>
+    <div class="sb-item" id="nav-galeria" onclick="goSection('galeria')">
+      📷<span class="tip">Galeria</span>
     </div>
     <div class="sb-sep"></div>
     <div class="sb-bottom">
@@ -369,6 +415,28 @@ select:focus{outline:none;border-color:var(--red)}
 
         <div class="art-grid" id="artGrid"></div>
         <div class="empty" id="emptyMsg" style="display:none">Nenhuma matéria encontrada.</div>
+      </div>
+
+      <!-- GALERIA -->
+      <div class="section" id="sec-galeria">
+        <div class="gallery-toolbar">
+          <span style="font-size:13px;color:#666">Imagens salvas no portal — clique para usar em banners ou matérias</span>
+          <button class="btn btn-primary" style="margin-left:auto" onclick="document.getElementById('fileInput').click()">📤 Enviar imagem</button>
+          <button class="btn btn-ghost btn-icon" onclick="loadGallery()" title="Atualizar">↺</button>
+        </div>
+        <div class="upload-zone" id="uploadZone"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="dropFiles(event)">
+          <input type="file" id="fileInput" accept="image/*" multiple onchange="uploadFiles(this.files)">
+          <div class="ico">🖼️</div>
+          <p>Arraste imagens aqui ou clique para selecionar</p>
+          <small>JPG, PNG, WEBP — máx. 5MB por imagem</small>
+          <div class="upload-progress" id="uploadProgress"><div class="bar" id="uploadBar"></div></div>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+        <div class="empty" id="galleryEmpty" style="display:none">Nenhuma imagem enviada ainda.</div>
       </div>
 
       <!-- BANNERS -->
@@ -489,6 +557,11 @@ select:focus{outline:none;border-color:var(--red)}
 <div class="toast" id="toast"></div>
 
 <script>
+// PWA
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/admin-sw.js').catch(()=>{});
+}
+
 const SB="https://yuqidbvfilomxkwaaerl.supabase.co";
 const KEY="sb_publishable_t3Qiwi-26sBX-0mbtdjXCA__h26yp3p";
 const PWD="m20admin2026";
@@ -527,17 +600,16 @@ function goSection(name){
   document.getElementById("sec-"+name).classList.add("on");
   document.getElementById("nav-"+name).classList.add("on");
   _curSection=name;
-  if(name==="materias"){
-    document.getElementById("topbarTitle").textContent="Matérias";
-    document.getElementById("btnNew").textContent="+ Nova matéria";
-    document.getElementById("btnNew").onclick=openNew;
-    loadArticles();
-  } else {
-    document.getElementById("topbarTitle").textContent="Banners";
-    document.getElementById("btnNew").textContent="+ Novo banner";
-    document.getElementById("btnNew").onclick=openNewBanner;
-    loadBanners();
-  }
+  const cfg={
+    materias:{title:"Matérias",btn:"+ Nova matéria",fn:openNew,load:loadArticles},
+    banners:{title:"Banners",btn:"+ Novo banner",fn:openNewBanner,load:loadBanners},
+    galeria:{title:"Galeria de imagens",btn:"📤 Enviar",fn:()=>document.getElementById('fileInput').click(),load:loadGallery},
+  }[name];
+  if(!cfg)return;
+  document.getElementById("topbarTitle").textContent=cfg.title;
+  document.getElementById("btnNew").textContent=cfg.btn;
+  document.getElementById("btnNew").onclick=cfg.fn;
+  cfg.load();
 }
 function refresh(){if(_curSection==="materias")loadArticles(); else loadBanners();}
 
@@ -772,6 +844,98 @@ async function confirmDelete(){
       toast("Excluído ✓");closeConfirm();
       if(_delTable==="articles")loadArticles(); else loadBanners();
     } else toast("Erro ao excluir",1);
+  }catch(e){toast("Erro: "+e.message,1);}
+}
+
+/* ══ GALERIA ══ */
+const BUCKET="admin-media";
+let galleryItems=[];
+
+async function loadGallery(){
+  document.getElementById("topbarSub").textContent="carregando…";
+  try{
+    const r=await fetch(SB+"/storage/v1/object/list/"+BUCKET,{
+      method:"POST",
+      headers:{...H},
+      body:JSON.stringify({limit:200,offset:0,sortBy:{column:"created_at",order:"desc"}})
+    });
+    galleryItems=await r.json();
+    if(!Array.isArray(galleryItems)){galleryItems=[];}
+    renderGallery();
+    document.getElementById("topbarSub").textContent=galleryItems.length+" imagens";
+  }catch(e){toast("Erro galeria: "+e.message,1);}
+}
+
+function renderGallery(){
+  const grid=document.getElementById("galleryGrid");
+  document.getElementById("galleryEmpty").style.display=galleryItems.length?"none":"block";
+  grid.innerHTML=galleryItems.map(f=>{
+    const url=SB+"/storage/v1/object/public/"+BUCKET+"/"+encodeURIComponent(f.name);
+    return`<div class="gal-item" title="${esc(f.name)}">
+      <img src="${url}" loading="lazy" onerror="this.src=''">
+      <div class="gal-name">${esc(f.name)}</div>
+      <div class="gal-actions">
+        <button class="btn btn-primary btn-sm" onclick="copyUrl('${url}',event)" title="Copiar URL">📋</button>
+        <button class="btn btn-sm" style="background:#fff;color:#111" onclick="useInBanner('${url}',event)" title="Usar em banner">🖼️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteMedia('${esc(f.name)}',event)" title="Excluir">🗑️</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function uploadFiles(files){
+  if(!files||!files.length)return;
+  const prog=document.getElementById("uploadProgress");
+  const bar=document.getElementById("uploadBar");
+  prog.style.display="block";bar.style.width="0";
+  let done=0;
+  for(const file of files){
+    const name=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+encodeURIComponent(name),{
+      method:"POST",
+      headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":file.type,"x-upsert":"true"},
+      body:file
+    });
+    done++;
+    bar.style.width=Math.round(done/files.length*100)+"%";
+    if(!r.ok){toast("Erro ao enviar "+file.name,1);}
+  }
+  setTimeout(()=>{prog.style.display="none";bar.style.width="0";},600);
+  toast("✓ "+files.length+(files.length>1?" imagens enviadas":" imagem enviada"));
+  document.getElementById("fileInput").value="";
+  loadGallery();
+}
+
+function dropFiles(e){
+  e.preventDefault();
+  document.getElementById("uploadZone").classList.remove("drag");
+  uploadFiles(e.dataTransfer.files);
+}
+
+function copyUrl(url,e){
+  e.stopPropagation();
+  navigator.clipboard.writeText(url).then(()=>toast("URL copiada ✓")).catch(()=>toast("Não foi possível copiar",1));
+}
+
+function useInBanner(url,e){
+  e.stopPropagation();
+  openNewBanner();
+  setTimeout(()=>{
+    document.getElementById("bImage").value=url;
+    previewImg("bImage","bImgPrev");
+  },100);
+}
+
+async function deleteMedia(name,e){
+  e.stopPropagation();
+  if(!confirm("Excluir imagem «"+name+"»?"))return;
+  try{
+    const r=await fetch(SB+"/storage/v1/object/"+BUCKET,{
+      method:"DELETE",headers:{...H},
+      body:JSON.stringify({prefixes:[name]})
+    });
+    if(r.ok){toast("Imagem excluída ✓");loadGallery();}
+    else toast("Erro ao excluir",1);
   }catch(e){toast("Erro: "+e.message,1);}
 }
 

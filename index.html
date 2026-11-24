@@ -506,7 +506,7 @@ function restartAds(){clearInterval(adTimer);const maxn=Math.max(1,...adSlots.fi
 // (re)monta todos os slots presentes no DOM: topo, meio (dentro do feed) e rodapé
 function buildAds(){
   adTick=0;adSlots=[];
-  [["adbar","topo",0],["adbarMid","meio",-1],["adbarFoot","rodape",-1]].forEach(function(s){
+  [["adbar","top",0],["adbarMid","middle",-1],["adbarFoot","bottom",-1]].forEach(function(s){
     if(!document.getElementById(s[0]))return;
     const off=s[2]<0?(Math.floor((slotList(s[1]).length||2)/2)||1):s[2];
     adSlots.push(renderAdSlot(s[0],s[1],off));
@@ -515,7 +515,7 @@ function buildAds(){
 }
 async function loadAds(){
   let ads=[];
-  try{ads=await sb("sponsors?select=*&active=eq.true&order=sort.asc,created_at.desc");}catch(e){}
+  try{ads=await sb("banners?select=*&active=eq.true&order=sort_order.asc,created_at.desc");}catch(e){}
   SPON=(ads||[]).filter(a=>a&&a.image_url);
   if(!SPON.length)SPON=DEFAULT_ADS.slice(); // fallback: banners iniciais
   buildAds();

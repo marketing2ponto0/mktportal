@@ -4,15 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MKT Portal</title>
-<link rel="icon" type="image/png" href="/favicon.png">
-<link rel="apple-touch-icon" href="/favicon.png">
-<meta property="og:type" content="website">
-<meta property="og:title" content="MKT Portal">
-<meta property="og:description" content="O portal de notícias do Marketing 2.0">
-<meta property="og:image" content="https://mktportal.netlify.app/logo.png">
-<meta property="og:url" content="https://mktportal.netlify.app">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://mktportal.netlify.app/logo.png">
 <meta name="description" content="O portal de notícias do Marketing 2.0">
 <meta name="theme-color" content="#A01313">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -79,8 +70,8 @@ main{padding-block:16px 8px;min-height:60vh}
 .card{display:grid;grid-template-columns:120px 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);
   border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s}
 .card:hover{transform:translateY(-1px)}
-.thumb{position:relative;background:color-mix(in srgb,var(--fg) 5%,var(--surface));aspect-ratio:1/1;min-width:0;overflow:hidden}
-.thumb img{width:100%;height:100%;object-fit:contain;display:block;background:#111}
+.thumb{position:relative;background:color-mix(in srgb,var(--fg) 5%,var(--surface));aspect-ratio:1/1;min-width:0}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface))}
 .ph span{font-family:var(--serif);font-weight:700;color:color-mix(in srgb,var(--accent) 72%,var(--fg));font-size:14px}
@@ -169,16 +160,19 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-block:24px 32px;
 .adwrap{padding-top:16px}
 .adwrap-foot{padding-top:4px;padding-bottom:20px}
 .wa-wrap{position:fixed;z-index:60;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px))}
-.wa-fab{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);box-shadow:0 3px 14px rgba(37,211,102,.4);display:grid;place-items:center;transition:transform .2s,box-shadow .2s;text-decoration:none;border:none;cursor:pointer}
-.wa-fab:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 5px 20px rgba(37,211,102,.5)}
-.wa-fab:active{transform:scale(.93)}
-.wa-fab svg{width:26px;height:26px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15))}
-.wa-menu{position:absolute;bottom:56px;right:0;background:var(--surface,#fff);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:6px 0;min-width:200px;opacity:0;transform:translateY(8px) scale(.95);pointer-events:none;transition:opacity .2s,transform .2s}
+.wa-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#25D366 0%,#128C7E 100%);box-shadow:0 4px 16px rgba(37,211,102,.45);display:grid;place-items:center;transition:transform .25s cubic-bezier(.4,0,.2,1),box-shadow .25s;text-decoration:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wa-fab:active{transform:scale(.9)}
+.wa-fab svg{width:28px;height:28px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}
+.wa-menu{position:absolute;bottom:62px;right:0;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);padding:8px;min-width:220px;opacity:0;transform:translateY(10px) scale(.92);pointer-events:none;transition:opacity .25s cubic-bezier(.4,0,.2,1),transform .25s cubic-bezier(.4,0,.2,1)}
 .wa-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.wa-menu a{display:flex;align-items:center;gap:10px;padding:10px 16px;text-decoration:none;color:var(--fg,#222);font-size:14px;font-weight:500;transition:background .15s}
-.wa-menu a:hover{background:rgba(37,211,102,.08)}
-.wa-menu a svg{width:22px;height:22px;flex-shrink:0}
-.wa-menu .wa-label{font-size:11px;color:var(--muted,#888);padding:6px 16px 2px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.wa-menu-item{display:flex;align-items:center;gap:12px;padding:12px 14px;text-decoration:none;color:#1a1a1a;font-size:15px;font-weight:600;border-radius:12px;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.wa-menu-item:hover,.wa-menu-item:active{background:#f0faf4}
+.wa-menu-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+.wa-menu-icon.personal{background:#25D366}
+.wa-menu-icon.business{background:#128C7E}
+.wa-menu-icon svg{width:22px;height:22px;display:block}
+.wa-menu-sub{font-size:12px;font-weight:400;color:#777;margin-top:1px}
+.wa-menu::after{content:'';position:absolute;bottom:-6px;right:18px;width:12px;height:12px;background:#fff;transform:rotate(45deg);box-shadow:3px 3px 4px rgba(0,0,0,.06)}
 .adbar{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
 .adtrack{display:flex;transition:transform .45s ease}
 .adslide{flex:0 0 100%;display:block}
@@ -247,14 +241,13 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-block:24px 32px;
 
 <div class="wa-wrap" id="waWrap">
   <div class="wa-menu" id="waMenu">
-    <div class="wa-label">Fale conosco</div>
-    <a id="waPersonal" href="https://wa.me/5511934503566" target="_blank" rel="noopener">
-      <svg viewBox="0 0 32 32"><path fill="#25D366" d="M16.04 4C9.9 4 4.9 9 4.9 15.14c0 2.17.64 4.2 1.74 5.92L4.5 28l7.12-2.08a11.1 11.1 0 0 0 4.42.92h.01c6.14 0 11.14-5 11.14-11.14C27.19 9 22.18 4 16.04 4zm0 20.4h-.01a9.2 9.2 0 0 1-4.68-1.28l-.34-.2-4.23 1.24 1.26-4.12-.22-.35a9.17 9.17 0 0 1-1.4-4.88c0-5.07 4.13-9.2 9.21-9.2 2.46 0 4.77.96 6.5 2.7a9.13 9.13 0 0 1 2.7 6.5c0 5.08-4.13 9.2-9.2 9.2zm5.05-6.9c-.28-.14-1.63-.8-1.88-.9-.25-.1-.44-.14-.62.14-.18.28-.71.9-.87 1.08-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.22-1.37-.82-.73-1.37-1.63-1.53-1.9-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.49.14-.16.18-.28.28-.46.09-.18.05-.35-.02-.49-.07-.14-.62-1.5-.85-2.05-.22-.53-.45-.46-.62-.47l-.53-.01c-.18 0-.48.07-.73.35-.25.28-.96.94-.96 2.3 0 1.36.98 2.67 1.12 2.85.14.18 1.93 2.95 4.68 4.14.65.28 1.16.45 1.56.58.66.21 1.25.18 1.72.11.52-.08 1.63-.67 1.86-1.31.23-.64.23-1.19.16-1.31-.07-.12-.25-.19-.53-.33z"/></svg>
-      WhatsApp
+    <a id="waPersonal" class="wa-menu-item" href="https://wa.me/5511934503566" target="_blank" rel="noopener">
+      <span class="wa-menu-icon personal"><svg viewBox="0 0 32 32"><path fill="#fff" d="M16.04 4C9.9 4 4.9 9 4.9 15.14c0 2.17.64 4.2 1.74 5.92L4.5 28l7.12-2.08a11.1 11.1 0 0 0 4.42.92h.01c6.14 0 11.14-5 11.14-11.14C27.19 9 22.18 4 16.04 4zm0 20.4h-.01a9.2 9.2 0 0 1-4.68-1.28l-.34-.2-4.23 1.24 1.26-4.12-.22-.35a9.17 9.17 0 0 1-1.4-4.88c0-5.07 4.13-9.2 9.21-9.2 2.46 0 4.77.96 6.5 2.7a9.13 9.13 0 0 1 2.7 6.5c0 5.08-4.13 9.2-9.2 9.2zm5.05-6.9c-.28-.14-1.63-.8-1.88-.9-.25-.1-.44-.14-.62.14-.18.28-.71.9-.87 1.08-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.22-1.37-.82-.73-1.37-1.63-1.53-1.9-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.49.14-.16.18-.28.28-.46.09-.18.05-.35-.02-.49-.07-.14-.62-1.5-.85-2.05-.22-.53-.45-.46-.62-.47l-.53-.01c-.18 0-.48.07-.73.35-.25.28-.96.94-.96 2.3 0 1.36.98 2.67 1.12 2.85.14.18 1.93 2.95 4.68 4.14.65.28 1.16.45 1.56.58.66.21 1.25.18 1.72.11.52-.08 1.63-.67 1.86-1.31.23-.64.23-1.19.16-1.31-.07-.12-.25-.19-.53-.33z"/></svg></span>
+      <span><strong>WhatsApp</strong><span class="wa-menu-sub"><br>Pessoal</span></span>
     </a>
-    <a id="waBusiness" href="https://wa.me/5511934503566" target="_blank" rel="noopener">
-      <svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="5.5" fill="#128C7E"/><path fill="#fff" d="M16 8.5c-3.86 0-7 3.14-7 7 0 1.3.36 2.52.98 3.56l-1.08 3.94 4.04-1.06A6.97 6.97 0 0 0 16 22.5c3.86 0 7-3.14 7-7s-3.14-7-7-7zm3.18 9.72c-.14.4-.82.76-1.14.81-.3.04-.67.06-1.08-.07a9.9 9.9 0 0 1-1.56-.58c-2.18-1.08-3.56-3.3-3.67-3.45-.1-.15-.86-1.15-.86-2.2 0-1.04.55-1.55.74-1.76.2-.21.43-.27.57-.27h.41c.13 0 .3-.05.47.36.18.41.6 1.47.65 1.57.05.1.09.23.02.37s-.1.21-.2.33c-.1.11-.22.26-.31.34-.1.1-.21.2-.09.4.12.2.53.87 1.13 1.41.78.7 1.43.91 1.63 1.01.2.1.32.09.44-.05.12-.15.5-.58.64-.78.13-.2.27-.17.44-.1.18.07 1.14.54 1.33.63.2.1.33.15.38.23.05.08.05.47-.09.87z"/></svg>
-      WhatsApp Business
+    <a id="waBusiness" class="wa-menu-item" href="https://wa.me/5511934503566" target="_blank" rel="noopener">
+      <span class="wa-menu-icon business"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12c0 1.85.51 3.58 1.39 5.07L2 22l4.93-1.39A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 2.4c4.2 0 7.6 3.4 7.6 7.6s-3.4 7.6-7.6 7.6c-1.5 0-2.9-.44-4.08-1.2l-.28-.18-2.92.77.78-2.85-.2-.3A7.55 7.55 0 0 1 4.4 12c0-4.2 3.4-7.6 7.6-7.6zM8.8 7.6c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.68 2.56 4.08 3.6.57.24 1.01.39 1.36.5.57.18 1.09.16 1.5.1.46-.08 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14s-.22-.16-.46-.28c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.46-.4-.4-.54-.4h-.46c-.16 0-.42.06-.64.3z"/><path fill="#fff" d="M16.2 14.2c-.06.16-.32.3-.66.52v-.02c.1 0 .2-.02.3-.04.16-.06.28-.2.36-.46z"/></svg></span>
+      <span><strong>WhatsApp Business</strong><span class="wa-menu-sub"><br>Comercial</span></span>
     </a>
   </div>
   <button class="wa-fab" id="waBtn" aria-label="Fale conosco no WhatsApp">

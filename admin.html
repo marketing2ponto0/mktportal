@@ -898,7 +898,7 @@ async function uploadFiles(files){
   const prog=document.getElementById("uploadProgress");
   const bar=document.getElementById("uploadBar");
   prog.style.display="block";bar.style.width="0";
-  let done=0;
+  let done=0,ok=0;
   for(const file of files){
     const name=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     const r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+encodeURIComponent(name),{
@@ -908,10 +908,10 @@ async function uploadFiles(files){
     });
     done++;
     bar.style.width=Math.round(done/files.length*100)+"%";
-    if(!r.ok){toast("Erro ao enviar "+file.name,1);}
+    if(r.ok){ok++;}else{toast("Erro ao enviar "+file.name,1);}
   }
   setTimeout(()=>{prog.style.display="none";bar.style.width="0";},600);
-  toast("✓ "+files.length+(files.length>1?" imagens enviadas":" imagem enviada"));
+  if(ok>0)toast("✓ "+ok+(ok>1?" imagens enviadas":" imagem enviada"));
   document.getElementById("fileInput").value="";
   loadGallery();
 }
@@ -953,7 +953,12 @@ async function deleteMedia(name,e){
 function previewImg(inp,prev){
   const val=document.getElementById(inp).value.trim();
   const el=document.getElementById(prev);
-  if(val){el.src=val;el.classList.add("show");}else el.classList.remove("show");
+  if(!val){el.classList.remove("show");return;}
+  if(/canva\.link|canva\.com\/design/i.test(val)){
+    toast("Link Canva não carrega como imagem. Exporte a arte como PNG/JPG, envie pela Galeria e copie a URL de lá.",1);
+    el.classList.remove("show");return;
+  }
+  el.src=val;el.classList.add("show");
 }
 function fmtDate(d){
   if(!d)return"—";

@@ -727,6 +727,7 @@ function goSection(name){
     materias:{title:"Matérias",btn:"+ Nova matéria",fn:openNew,load:loadArticles},
     banners:{title:"Banners",btn:"+ Novo banner",fn:openNewBanner,load:loadBanners},
     galeria:{title:"Galeria de imagens",btn:"📤 Enviar",fn:()=>document.getElementById('fileInput').click(),load:loadGallery},
+    destaques:{title:"Destaques",btn:"+ Nova marca",fn:openNewBrand,load:loadBrands},
   }[name];
   if(!cfg)return;
   document.getElementById("topbarTitle").textContent=cfg.title;
@@ -734,7 +735,12 @@ function goSection(name){
   document.getElementById("btnNew").onclick=cfg.fn;
   cfg.load();
 }
-function refresh(){if(_curSection==="materias")loadArticles(); else loadBanners();}
+function refresh(){
+  if(_curSection==="materias")loadArticles();
+  else if(_curSection==="banners")loadBanners();
+  else if(_curSection==="galeria")loadGallery();
+  else if(_curSection==="destaques")loadBrands();
+}
 
 /* ══ ARTIGOS ══ */
 async function loadArticles(){

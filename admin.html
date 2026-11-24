@@ -353,6 +353,9 @@ select:focus{outline:none;border-color:var(--red)}
     <div class="sb-item" id="nav-galeria" onclick="goSection('galeria')">
       📷<span class="tip">Galeria</span>
     </div>
+    <div class="sb-item" id="nav-destaques" onclick="goSection('destaques')">
+      ⭐<span class="tip">Destaques</span>
+    </div>
     <div class="sb-sep"></div>
     <div class="sb-bottom">
       <div class="sb-item" onclick="logout()">↩<span class="tip">Sair</span></div>
@@ -439,6 +442,17 @@ select:focus{outline:none;border-color:var(--red)}
         </div>
         <div class="gallery-grid" id="galleryGrid"></div>
         <div class="empty" id="galleryEmpty" style="display:none">Nenhuma imagem enviada ainda.</div>
+      </div>
+
+      <!-- DESTAQUES -->
+      <div class="section" id="sec-destaques">
+        <div class="gallery-toolbar">
+          <span style="font-size:13px;color:#666">Marcas e Guias exibidos nos destaques do portal</span>
+          <button class="btn btn-primary" style="margin-left:auto" onclick="openNewBrand()">+ Nova marca</button>
+          <button class="btn btn-ghost btn-icon" onclick="loadBrands()" title="Atualizar">↺</button>
+        </div>
+        <div class="brand-admin-grid" id="brandAdminGrid"></div>
+        <div class="empty" id="brandEmpty" style="display:none">Nenhuma marca cadastrada.</div>
       </div>
 
       <!-- BANNERS -->
@@ -556,6 +570,46 @@ select:focus{outline:none;border-color:var(--red)}
 </div>
 
 <!-- CONFIRMAR DELETE -->
+<!-- DRAWER Marca/Destaque -->
+<div class="drawer-bg" id="bdDrawerBg" onclick="closeBrandDrawer(event)" style="display:none">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-header">
+      <h2 id="bdDrawerTitle">Nova marca</h2>
+      <button class="btn btn-ghost btn-icon" onclick="document.getElementById('bdDrawerBg').style.display='none'">✕</button>
+    </div>
+    <div class="drawer-body">
+      <input type="hidden" id="bdId">
+      <div class="field"><label>Nome da marca</label><input id="bdName" placeholder="Ex: Guia Bacia do Juquery"></div>
+      <div class="field">
+        <label>Logo (URL)</label>
+        <input id="bdLogo" placeholder="https://…" oninput="previewImg('bdLogo','bdLogoPrev')">
+        <img id="bdLogoPrev" class="img-preview">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="file" id="bdLogoFI" accept="image/*" style="display:none" onchange="uploadBrandLogo(this.files)">
+          <button class="btn btn-ghost" style="font-size:12px" onclick="document.getElementById('bdLogoFI').click()">📤 Enviar logo</button>
+          <span style="font-size:11px;color:#888;align-self:center">ou cole a URL da Galeria</span>
+        </div>
+      </div>
+      <div class="field"><label>Link do Instagram (opcional)</label><input id="bdInsta" placeholder="https://instagram.com/…"></div>
+      <div class="field">
+        <label>Ordem de exibição</label>
+        <input id="bdSort" type="number" value="0" min="0" style="width:80px">
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="bdActive">
+          <option value="true">Ativo — aparece nos destaques</option>
+          <option value="false">Inativo — oculto</option>
+        </select>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('bdDrawerBg').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveBrand()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-wrap" id="confirmWrap">
   <div class="confirm-box">
     <div class="ico">🗑️</div>
@@ -575,6 +629,10 @@ const SB="https://yuqidbvfilomxkwaaerl.supabase.co";
 const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1cWlkYnZmaWxvbXhrd2FhZXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2OTU1OTgsImV4cCI6MjEwMjI3MTU5OH0.QloXCjdvq8Rb8m1G3G8pc3aHEx4m3mhzf6JH8cW0QqE";
 const PWD="m20admin2026";
 const H={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
+async function sb(path){const r=await fetch(SB+"/rest/v1/"+path,{headers:H});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbPost(path,data){const r=await fetch(SB+"/rest/v1/"+path,{method:"POST",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify(data)});if(!r.ok)throw new Error(await r.text());}
+async function sbPatch(path,data){const r=await fetch(SB+"/rest/v1/"+path,{method:"PATCH",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify(data)});if(!r.ok)throw new Error(await r.text());}
+async function sbDelete(path){const r=await fetch(SB+"/rest/v1/"+path,{method:"DELETE",headers:H});if(!r.ok)throw new Error(await r.text());}
 
 let articles=[], banners=[];
 let _delId=null, _delTable=null;
@@ -857,6 +915,14 @@ async function confirmDelete(){
   }catch(e){toast("Erro: "+e.message,1);}
 }
 
+/* ══ DESTAQUES ══ */
+.brand-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
+.brand-admin-card{background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.brand-admin-logo{width:72px;height:72px;border-radius:50%;object-fit:contain;background:#f0f0f0;border:2px solid #e2e2e2}
+.brand-admin-logo.placeholder{display:flex;align-items:center;justify-content:center;font-size:24px}
+.brand-admin-name{font-weight:700;font-size:13px;color:#111}
+.brand-admin-actions{display:flex;gap:6px;width:100%}
+.brand-admin-actions .btn{flex:1;font-size:11px;padding:5px 4px}
 /* ══ GALERIA ══ */
 const BUCKET="admin-media";
 let galleryItems=[];
@@ -947,6 +1013,119 @@ async function deleteMedia(name,e){
     if(r.ok){toast("Imagem excluída ✓");loadGallery();}
     else toast("Erro ao excluir",1);
   }catch(e){toast("Erro: "+e.message,1);}
+}
+
+/* ══ DESTAQUES ══ */
+let brandsData=[];
+
+async function loadBrands(){
+  document.getElementById("topbarSub").textContent="carregando…";
+  try{
+    const list=await sb("brands?select=*&order=sort.asc,name.asc");
+    brandsData=Array.isArray(list)?list:[];
+    renderBrands();
+    document.getElementById("topbarSub").textContent=brandsData.length+" marcas";
+  }catch(e){toast("Erro ao carregar marcas: "+e.message,1);}
+}
+
+function renderBrands(){
+  const grid=document.getElementById("brandAdminGrid");
+  document.getElementById("brandEmpty").style.display=brandsData.length?"none":"block";
+  grid.innerHTML=brandsData.map(b=>{
+    const logoHtml=b.logo_url
+      ?'<img class="brand-admin-logo" src="'+esc(b.logo_url)+'" onerror="this.style.display='none'">'
+      :'<div class="brand-admin-logo placeholder">🏷️</div>';
+    const statusDot=b.active?'<span style="color:#22c55e">●</span>':'<span style="color:#ccc">●</span>';
+    return`<div class="brand-admin-card">
+      ${logoHtml}
+      <div class="brand-admin-name">${statusDot} ${esc(b.name)}</div>
+      <div class="brand-admin-actions">
+        <button class="btn btn-primary btn-sm" onclick="editBrand(${b.id})">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBrand(${b.id},'${esc(b.name)}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function openNewBrand(){
+  document.getElementById("bdId").value="";
+  document.getElementById("bdName").value="";
+  document.getElementById("bdLogo").value="";
+  document.getElementById("bdLogoPrev").classList.remove("show");
+  document.getElementById("bdInsta").value="";
+  document.getElementById("bdSort").value="0";
+  document.getElementById("bdActive").value="true";
+  document.getElementById("bdDrawerTitle").textContent="Nova marca";
+  document.getElementById("bdDrawerBg").style.display="flex";
+}
+
+function editBrand(id){
+  const b=brandsData.find(x=>x.id===id);if(!b)return;
+  document.getElementById("bdId").value=b.id;
+  document.getElementById("bdName").value=b.name||"";
+  document.getElementById("bdLogo").value=b.logo_url||"";
+  if(b.logo_url){document.getElementById("bdLogoPrev").src=b.logo_url;document.getElementById("bdLogoPrev").classList.add("show");}
+  else document.getElementById("bdLogoPrev").classList.remove("show");
+  document.getElementById("bdInsta").value=b.instagram_url||"";
+  document.getElementById("bdSort").value=b.sort||0;
+  document.getElementById("bdActive").value=String(b.active!==false);
+  document.getElementById("bdDrawerTitle").textContent="Editar marca";
+  document.getElementById("bdDrawerBg").style.display="flex";
+}
+
+function closeBrandDrawer(e){
+  if(e&&e.target!==document.getElementById("bdDrawerBg"))return;
+  document.getElementById("bdDrawerBg").style.display="none";
+}
+
+async function saveBrand(){
+  const id=document.getElementById("bdId").value;
+  const payload={
+    name:document.getElementById("bdName").value.trim(),
+    logo_url:document.getElementById("bdLogo").value.trim()||null,
+    instagram_url:document.getElementById("bdInsta").value.trim()||null,
+    sort:parseInt(document.getElementById("bdSort").value)||0,
+    active:document.getElementById("bdActive").value==="true"
+  };
+  if(!payload.name){toast("Nome obrigatório",1);return;}
+  try{
+    if(id){
+      await sbPatch("brands?id=eq."+id,payload);
+      toast("Marca atualizada ✓");
+    }else{
+      await sbPost("brands",payload);
+      toast("Marca criada ✓");
+    }
+    document.getElementById("bdDrawerBg").style.display="none";
+    loadBrands();
+  }catch(e){toast("Erro: "+e.message,1);}
+}
+
+async function deleteBrand(id,name){
+  if(!confirm("Excluir a marca «"+name+"»?"))return;
+  try{
+    await sbDelete("brands?id=eq."+id);
+    toast("Marca excluída ✓");
+    loadBrands();
+  }catch(e){toast("Erro: "+e.message,1);}
+}
+
+async function uploadBrandLogo(files){
+  if(!files||!files.length)return;
+  const file=files[0];
+  const name="brand_"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+encodeURIComponent(name),{
+    method:"POST",
+    headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":file.type,"x-upsert":"true"},
+    body:file
+  });
+  if(r.ok){
+    const url=SB+"/storage/v1/object/public/"+BUCKET+"/"+encodeURIComponent(name);
+    document.getElementById("bdLogo").value=url;
+    document.getElementById("bdLogoFI").value="";
+    previewImg("bdLogo","bdLogoPrev");
+    toast("Logo enviado ✓");
+  }else{toast("Erro ao enviar logo",1);}
 }
 
 /* ══ UTILS ══ */

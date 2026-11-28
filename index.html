@@ -307,7 +307,7 @@ function feedParams(){
   if(activeTag&&TAGGROUP[activeTag])parts.push(TAGGROUP[activeTag]);
   if(query){const t="*"+encodeURIComponent(query)+"*";
     parts.push("or(title.ilike."+t+",summary.ilike."+t+",city.ilike."+t+",category.ilike."+t+",content.ilike."+t+")");}
-  const p=["select=id,title,summary,image_url,category,city,section,published_at","order=published_at.desc.nullslast","or(status.eq.published,status.is.null)"];
+  const p=["select=id,title,summary,image_url,category,city,section,published_at","order=published_at.desc.nullslast","status=eq.published"];
   if(parts.length)p.push("and=("+parts.join(",")+")");
   return p;
 }
